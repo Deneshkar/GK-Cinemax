@@ -10,6 +10,7 @@ import RegisterPage from './pages/RegisterPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import EditMoviePage from './pages/EditMoviePage';
+import EditProfilePage from './pages/EditProfilePage'; // imported Edit Profile Component
 
 // Components
 import Navbar from './components/Navbar';
@@ -30,6 +31,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/my-bookings" element={<MyBookingsPage />} />
+          <Route path="/profile" element={<EditProfilePage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/movies/:id" element={<EditMoviePage />} />
         </Routes>

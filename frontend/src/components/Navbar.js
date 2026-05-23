@@ -49,9 +49,9 @@ function Navbar() {
               : <Link to="/my-bookings">My Bookings</Link>
             }
 
-            <span className="navbar-username">
+            <Link to="/profile" className="navbar-username" title="Edit Profile">
               Hi, {currentUser.name}
-            </span>
+            </Link>
 
             <button
               className="logout-btn"

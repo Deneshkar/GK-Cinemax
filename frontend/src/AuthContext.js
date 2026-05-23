@@ -26,8 +26,17 @@ function AuthProvider({ children }) {
     setCurrentUser(null);
   }
 
+  // Updates the user safely after profile edit without breaking token
+  function updateCurrentUser(userData, token) {
+    localStorage.setItem('gkUser', JSON.stringify(userData));
+    if (token) {
+      localStorage.setItem('gkToken', token);
+    }
+    setCurrentUser(userData);
+  }
+
   return (
-    <AuthContext.Provider value={{ currentUser, login, logout }}>
+    <AuthContext.Provider value={{ currentUser, login, logout, updateCurrentUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -36,9 +36,17 @@ function RegisterPage() {
       return;
     }
 
-    // Check password is at least 6 characters
-    if (userPassword.length < 6) {
-      setErrorMessage('Password must be at least 6 characters.');
+    // Strict valid email check (RFC 5322 Standard format)
+    const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (!emailRegex.test(userEmail)) {
+      setErrorMessage('Please provide a valid working email address.');
+      return;
+    }
+
+    // Strict password check
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(userPassword)) {
+      setErrorMessage('Password must be at least 8 characters, include uppercase, lowercase, number, and special character.');
       return;
     }
 
@@ -123,11 +131,30 @@ function RegisterPage() {
           <input
             type="password"
             className="input-field"
-            placeholder="At least 6 characters"
+            placeholder="Create a strong password"
             value={userPassword}
             onChange={(event) => setUserPassword(event.target.value)}
             required
           />
+
+          {/* Dynamic Password Requirements */}
+          <ul className="password-requirements">
+            <li className={userPassword.length >= 8 ? 'req-met' : 'req-unmet'}>
+              <span className="req-icon">{userPassword.length >= 8 ? '✓' : '✗'}</span> At least 8 characters
+            </li>
+            <li className={/[A-Z]/.test(userPassword) ? 'req-met' : 'req-unmet'}>
+              <span className="req-icon">{/[A-Z]/.test(userPassword) ? '✓' : '✗'}</span> One uppercase letter
+            </li>
+            <li className={/[a-z]/.test(userPassword) ? 'req-met' : 'req-unmet'}>
+              <span className="req-icon">{/[a-z]/.test(userPassword) ? '✓' : '✗'}</span> One lowercase letter
+            </li>
+            <li className={/\d/.test(userPassword) ? 'req-met' : 'req-unmet'}>
+              <span className="req-icon">{/\d/.test(userPassword) ? '✓' : '✗'}</span> One number
+            </li>
+            <li className={/[@$!%*?&]/.test(userPassword) ? 'req-met' : 'req-unmet'}>
+              <span className="req-icon">{/[@$!%*?&]/.test(userPassword) ? '✓' : '✗'}</span> One special character (@$!%*?&)
+            </li>
+          </ul>
 
           {/* Confirm password field */}
           <label>Confirm Password</label>

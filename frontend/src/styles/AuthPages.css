@@ -87,6 +87,37 @@
   background-color: #1a1a1a;
 }
 
+/* Password requirements dynamic list */
+.password-requirements {
+  list-style: none;
+  font-size: 12.5px;
+  margin-top: -12px;
+  margin-bottom: 20px;
+  padding-left: 4px;
+}
+
+.password-requirements li {
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.3s ease;
+  font-weight: 500;
+}
+
+.password-requirements .req-icon {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.req-met {
+  color: #4ade80; /* GK Green for success */
+}
+
+.req-unmet {
+  color: #ff6b6b; /* GK Red for missing */
+}
+
 /* The submit button — full width */
 .auth-submit-btn {
   width: 100%;
