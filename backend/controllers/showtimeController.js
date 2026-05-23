@@ -49,4 +49,42 @@ async function addShowtime(req, res) {
   }
 }
 
-module.exports = { getAllShowtimes, getOneShowtime, addShowtime };
+// Updates an existing showtime — admin only
+async function updateShowtime(req, res) {
+  try {
+    const { screen, date, time, price } = req.body;
+
+    const updatedShowtime = await Showtime.findByIdAndUpdate(
+      req.params.id,
+      { screen, date, time, price },
+      { new: true }
+    );
+
+    if (!updatedShowtime) {
+      return res.status(404).json({ message: 'Showtime not found' });
+    }
+
+    res.json({ message: 'Showtime updated successfully', showtime: updatedShowtime });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+// Deletes a showtime — admin only
+async function deleteShowtime(req, res) {
+  try {
+    const deletedShowtime = await Showtime.findByIdAndDelete(req.params.id);
+
+    if (!deletedShowtime) {
+      return res.status(404).json({ message: 'Showtime not found' });
+    }
+
+    res.json({ message: 'Showtime deleted successfully' });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+module.exports = { getAllShowtimes, getOneShowtime, addShowtime, updateShowtime, deleteShowtime };

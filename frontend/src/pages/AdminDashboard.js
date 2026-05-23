@@ -201,19 +201,24 @@ function AddShowtimeForm() {
 
   // movieList holds all movies to populate the dropdown
   const [movieList, setMovieList]             = useState([]);
+  const [allShowtimes, setAllShowtimes]       = useState([]);
+  
+  // State for Add/Edit
   const [selectedMovieId, setSelectedMovieId] = useState('');
-  const [screenNumber, setScreenNumber]       = useState('1');
+  const [selectedScreens, setSelectedScreens] = useState(['1']);
   const [showDate, setShowDate]               = useState('');
   const [showTime, setShowTime]               = useState('');
   const [ticketPrice, setTicketPrice]         = useState('600');
+  const [editingShowtimeId, setEditingShowtimeId] = useState(null);
 
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage]     = useState('');
   const [isSubmitting, setIsSubmitting]     = useState(false);
 
-  // Fetch all movies when this form loads so we can show them in a dropdown
+  // Fetch all movies and showtimes when this form loads
   useEffect(() => {
     fetchMovies();
+    fetchAllShowtimes();
   }, []);
 
   // Fetches all movies to populate the movie dropdown
@@ -226,120 +231,281 @@ function AddShowtimeForm() {
     }
   }
 
-  // Handles the add showtime form submission
-  async function handleAddShowtime(event) {
+  // Fetches all showtimes to list them below
+  async function fetchAllShowtimes() {
+    try {
+      const response = await axios.get('http://localhost:5000/api/showtimes');
+      setAllShowtimes(response.data);
+    } catch (error) {
+      console.error('Failed to load showtimes.', error);
+    }
+  }
+
+  // Handle edit button click
+  function handleEditClick(showtime) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setEditingShowtimeId(showtime._id);
+    // showtime.movieId could be an object if populated, so grab _id
+    setSelectedMovieId(showtime.movieId?._id || showtime.movieId);
+    setSelectedScreens([String(showtime.screen)]); // edit single screen
+    setShowDate(showtime.date);
+    setShowTime(showtime.time);
+    setTicketPrice(String(showtime.price));
+    setSuccessMessage('');
+    setErrorMessage('');
+  }
+
+  // Handle delete button click
+  async function handleDeleteShowtime(id) {
+    if (!window.confirm('Are you sure you want to delete this showtime?')) return;
+    
+    try {
+      const token = localStorage.getItem('gkToken');
+      await axios.delete(`http://localhost:5000/api/showtimes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAllShowtimes(allShowtimes.filter((s) => s._id !== id));
+      setSuccessMessage('Showtime deleted successfully!');
+      
+      if (editingShowtimeId === id) resetForm();
+
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || 'Failed to delete showtime.');
+    }
+  }
+
+  // Reset form
+  function resetForm() {
+    setEditingShowtimeId(null);
+    setSelectedMovieId('');
+    setSelectedScreens(['1']);
+    setShowDate('');
+    setShowTime('');
+    setTicketPrice('600');
+  }
+
+  // Handles the add/edit showtime form submission
+  async function handleAddOrUpdateShowtime(event) {
     event.preventDefault();
     setSuccessMessage('');
     setErrorMessage('');
+
+    if (selectedScreens.length === 0) {
+      setErrorMessage('Please select at least one screen.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const token = localStorage.getItem('gkToken');
 
-      await axios.post(
-        'http://localhost:5000/api/showtimes',
-        {
-          movieId: selectedMovieId,
-          screen:  Number(screenNumber),
-          date:    showDate,
-          time:    showTime,
-          price:   Number(ticketPrice)
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      if (editingShowtimeId) {
+        // Update existing showtime (single screen based on checkboxes, use first selection)
+        await axios.put(
+          `http://localhost:5000/api/showtimes/${editingShowtimeId}`,
+          {
+            screen: Number(selectedScreens[0]),
+            date: showDate,
+            time: showTime,
+            price: Number(ticketPrice)
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSuccessMessage('Showtime updated successfully!');
+      } else {
+        // Add new showtime(s)
+        const promises = selectedScreens.map(scr => 
+          axios.post(
+            'http://localhost:5000/api/showtimes',
+            {
+              movieId: selectedMovieId,
+              screen:  Number(scr),
+              date:    showDate,
+              time:    showTime,
+              price:   Number(ticketPrice)
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+        );
 
-      setSuccessMessage('Showtime added successfully!');
+        await Promise.all(promises);
+        setSuccessMessage('Showtime(s) added successfully!');
+      }
 
-      // Clear form after success
-      setSelectedMovieId('');
-      setScreenNumber('1');
-      setShowDate('');
-      setShowTime('');
-      setTicketPrice('600');
+      await fetchAllShowtimes();
+      resetForm();
 
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || 'Failed to add showtime.');
+      setErrorMessage(error.response?.data?.message || 'Failed to save showtime.');
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <div className="admin-form-card">
-      <h3>Add New Showtime</h3>
+    <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
+      <div className="admin-form-card" style={{ flex: '1', position: 'sticky', top: '20px' }}>
+        <h3>{editingShowtimeId ? 'Edit Showtime' : 'Add New Showtime'}</h3>
 
-      {successMessage && <div className="success-message">{successMessage}</div>}
-      {errorMessage   && <div className="admin-error">{errorMessage}</div>}
+        {successMessage && <div className="success-message">{successMessage}</div>}
+        {errorMessage   && <div className="admin-error">{errorMessage}</div>}
 
-      <form onSubmit={handleAddShowtime}>
+        <form onSubmit={handleAddOrUpdateShowtime}>
 
-        {/* Movie dropdown */}
-        <label>Movie</label>
-        <select
-          className="input-field"
-          value={selectedMovieId}
-          onChange={(e) => setSelectedMovieId(e.target.value)}
-          required
-        >
-          <option value="">-- Select a movie --</option>
-          {movieList.map((movie) => (
-            <option key={movie._id} value={movie._id}>
-              {movie.title} ({movie.language})
-            </option>
-          ))}
-        </select>
+          {/* Movie dropdown */}
+          <label>Movie</label>
+          <select
+            className="input-field"
+            value={selectedMovieId}
+            onChange={(e) => setSelectedMovieId(e.target.value)}
+            disabled={!!editingShowtimeId} // lock movie if editing existing showtime
+            required
+          >
+            <option value="">-- Select a movie --</option>
+            {movieList.map((movie) => (
+              <option key={movie._id} value={movie._id}>
+                {movie.title} ({movie.language})
+              </option>
+            ))}
+          </select>
 
-        {/* Screen dropdown */}
-        <label>Screen</label>
-        <select
-          className="input-field"
-          value={screenNumber}
-          onChange={(e) => setScreenNumber(e.target.value)}
-        >
-          <option value="1">Screen 1</option>
-          <option value="2">Screen 2</option>
-        </select>
+          {/* Screen checkboxes */}
+          <label>Screens</label>
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '15px', color: '#fff' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                value="1"
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                checked={selectedScreens.includes('1')}
+                onChange={(e) => {
+                  if (editingShowtimeId) setSelectedScreens(['1']); // only allow 1 screen at a time in edit mode
+                  else if (e.target.checked) setSelectedScreens([...selectedScreens, '1']);
+                  else setSelectedScreens(selectedScreens.filter((s) => s !== '1'));
+                }}
+              />
+              Screen 1
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                value="2"
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                checked={selectedScreens.includes('2')}
+                onChange={(e) => {
+                  if (editingShowtimeId) setSelectedScreens(['2']);
+                  else if (e.target.checked) setSelectedScreens([...selectedScreens, '2']);
+                  else setSelectedScreens(selectedScreens.filter((s) => s !== '2'));
+                }}
+              />
+              Screen 2
+            </label>
+          </div>
 
-        {/* Date picker */}
-        <label>Date</label>
-        <input
-          type="date"
-          className="input-field"
-          value={showDate}
-          onChange={(e) => setShowDate(e.target.value)}
-          required
-        />
+          {/* Date picker */}
+          <label>Date</label>
+          <input
+            type="date"
+            className="input-field"
+            value={showDate}
+            onChange={(e) => setShowDate(e.target.value)}
+            required
+          />
 
-        {/* Time picker */}
-        <label>Time</label>
-        <input
-          type="time"
-          className="input-field"
-          value={showTime}
-          onChange={(e) => setShowTime(e.target.value)}
-          required
-        />
+          {/* Time picker */}
+          <label>Time</label>
+          <input
+            type="time"
+            className="input-field"
+            value={showTime}
+            onChange={(e) => setShowTime(e.target.value)}
+            required
+          />
 
-        {/* Price field */}
-        <label>Ticket Price (LKR)</label>
-        <input
-          type="number"
-          className="input-field"
-          value={ticketPrice}
-          onChange={(e) => setTicketPrice(e.target.value)}
-          required
-        />
+          {/* Price field */}
+          <label>Ticket Price (LKR)</label>
+          <input
+            type="number"
+            className="input-field"
+            value={ticketPrice}
+            onChange={(e) => setTicketPrice(e.target.value)}
+            required
+          />
 
-        <button
-          type="submit"
-          className="btn-primary"
-          style={{ width: '100%' }}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Adding...' : 'Add Showtime'}
-        </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              type="submit"
+              className="btn-primary"
+              style={{ flex: 1 }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Saving...' : (editingShowtimeId ? 'Update Showtime' : 'Add Showtime')}
+            </button>
 
-      </form>
+            {editingShowtimeId && (
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={resetForm}
+                style={{ backgroundColor: '#444' }}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+
+        </form>
+      </div>
+
+      {/* Showtimes List Table overlaying next to the form */}
+      <div style={{ flex: '1.5', backgroundColor: '#111', padding: '20px', borderRadius: '8px' }}>
+        <h3 style={{ color: '#fff', borderBottom: '1px solid #333', paddingBottom: '10px', marginBottom: '20px' }}>
+          Manage Existing Showtimes
+        </h3>
+
+        {allShowtimes.length === 0 ? (
+          <p style={{ color: '#aaa' }}>No showtimes found.</p>
+        ) : (
+          <table className="bookings-table">
+            <thead>
+              <tr>
+                <th>Movie</th>
+                <th>Screen</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Price</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allShowtimes.map(st => (
+                <tr key={st._id}>
+                  <td>{st.movieId?.title || 'Unknown'}</td>
+                  <td>Screen {st.screen}</td>
+                  <td>{new Date(st.date).toLocaleDateString()}</td>
+                  <td>{st.time}</td>
+                  <td>Rs {st.price}</td>
+                  <td>
+                    <button 
+                      style={{ background: '#eab308', border: 'none', color: '#000', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}
+                      onClick={() => handleEditClick(st)}
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      style={{ background: '#dc2626', border: 'none', color: '#fff', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                      onClick={() => handleDeleteShowtime(st._id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }
