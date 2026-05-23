@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
+
 /* Remove default browser spacing and use border-box sizing everywhere */
 * {
   margin: 0;
@@ -7,10 +9,17 @@
 
 /* Set the base font and background color for the whole site */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Poppins', sans-serif;
   background-color: #0a0a0a;
   color: #ffffff;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Special cinematic font for all headings, logos, and buttons */
+h1, h2, h3, h4, h5, h6, .navbar-logo, .btn-primary, .auth-submit-btn, .footer-brand {
+  font-family: 'Montserrat', sans-serif;
 }
 
 /* The main content area sits below the navbar */

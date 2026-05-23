@@ -118,6 +118,39 @@ function HomePage() {
         ))}
       </div>
 
+      {/* Footer Section */}
+      <div className="home-footer">
+        <div className="footer-content">
+          
+          <div className="footer-left">
+            <h2 className="footer-brand">
+              <span className="logo-gk">GK</span> 
+              <span className="logo-cine">Cine</span>
+              <span className="logo-max">max</span>
+            </h2>
+            <p className="footer-desc">
+              The pinnacle of immersive cinematic experiences, designed for true film lovers.
+            </p>
+          </div>
+
+          <div className="footer-links">
+            <div className="footer-col">
+              <Link to="#">About Us</Link>
+              <Link to="#">Help Center</Link>
+              <Link to="#">Contact Us</Link>
+            </div>
+            <div className="footer-col">
+              <Link to="#">Privacy Policy</Link>
+              <Link to="#">Terms of Service</Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="footer-bottom">
+          <p>© 2026 GK Cinemax. All rights reserved.</p>
+        </div>
+      </div>
+
     </div>
   );
 }
