@@ -1,0 +1,164 @@
+/* The screen banner at the top of the seat map */
+.cinema-screen {
+  background: linear-gradient(180deg, #e50914, transparent);
+  text-align: center;
+  padding: 10px;
+  margin-bottom: 30px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #ccc;
+  letter-spacing: 4px;
+}
+
+/* The full seat map container */
+.seat-map {
+  margin-bottom: 30px;
+}
+
+/* One row of seats */
+.seat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* The row label on the left — A, B, C etc */
+.row-label {
+  width: 20px;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+}
+
+/* Each individual seat button */
+.seat {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px 6px 0 0;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  transition: transform 0.1s;
+}
+
+/* Available seat — white/grey */
+.seat.available {
+  background-color: #444;
+  color: #ccc;
+}
+
+.seat.available:hover {
+  background-color: #666;
+  transform: scale(1.1);
+}
+
+/* Selected seat — green */
+.seat.selected {
+  background-color: #16a34a;
+  color: white;
+}
+
+.seat.selected:hover {
+  background-color: #15803d;
+  transform: scale(1.1);
+}
+
+/* Booked seat — red, cannot be clicked */
+.seat.booked {
+  background-color: #e50914;
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* The seat legend below the map */
+.seat-legend {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+/* Each legend item */
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+/* The small colored box in each legend item */
+.legend-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.legend-box.available { background-color: #444; }
+.legend-box.selected  { background-color: #16a34a; }
+.legend-box.booked    { background-color: #e50914; }
+
+/* The booking summary panel */
+.booking-summary {
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  padding: 24px;
+  border: 1px solid #333;
+}
+
+.booking-summary h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+/* Each line in the summary */
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: #aaa;
+}
+
+/* The total price line */
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+  border-top: 1px solid #333;
+  padding-top: 16px;
+  margin-top: 8px;
+  margin-bottom: 20px;
+}
+
+/* Shown when no seats are selected yet */
+.no-seats-selected {
+  color: #666;
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+/* The showtime info at the top of the page */
+.showtime-info {
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-left: 4px solid #e50914;
+}
+
+.showtime-info h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.showtime-info p {
+  color: #aaa;
+  font-size: 15px;
+}

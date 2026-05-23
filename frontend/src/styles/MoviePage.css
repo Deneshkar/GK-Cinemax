@@ -1,0 +1,131 @@
+/* The top section with poster on left and details on right */
+.movie-details {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+/* The movie poster on the left */
+.movie-poster {
+  width: 280px;
+  min-width: 280px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* The text details on the right */
+.movie-info {
+  flex: 1;
+}
+
+/* The movie title */
+.movie-info h1 {
+  font-size: 36px;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+/* Each detail line like language, duration */
+.movie-meta {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* Each individual meta badge */
+.meta-badge {
+  background-color: #222;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #cccccc;
+  border: 1px solid #333;
+}
+
+/* The movie description text */
+.movie-description {
+  font-size: 16px;
+  color: #aaaaaa;
+  line-height: 1.7;
+  margin-bottom: 30px;
+}
+
+/* The showtimes section below */
+.showtimes-section h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  border-left: 4px solid #e50914;
+  padding-left: 12px;
+}
+
+/* The grid of showtime cards */
+.showtimes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* Each showtime card */
+.showtime-card {
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid #333;
+  transition: border-color 0.2s;
+}
+
+.showtime-card:hover {
+  border-color: #e50914;
+}
+
+/* The date shown at the top of the card */
+.showtime-date {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+/* The time shown large in the middle */
+.showtime-time {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+/* The screen number */
+.showtime-screen {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 16px;
+}
+
+/* The price shown in red */
+.showtime-price {
+  font-size: 16px;
+  color: #e50914;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+/* Shown when there are no showtimes yet */
+.no-showtimes {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+  background-color: #1a1a1a;
+  border-radius: 10px;
+}
+
+/* On small screens stack poster above details */
+@media (max-width: 600px) {
+  .movie-details {
+    flex-direction: column;
+  }
+  .movie-poster {
+    width: 100%;
+    min-width: unset;
+  }
+}
