@@ -43,6 +43,22 @@ function MyBookingsPage() {
     }
   }
 
+  // Handle cancellation request
+  async function handleCancelRequest(bookingId) {
+    if (!window.confirm('Are you sure you want to request a cancellation for this booking? Amount will be refunded upon admin approval.')) return;
+    try {
+      const token = localStorage.getItem('gkToken');
+      await axios.put(`http://localhost:5000/api/bookings/${bookingId}/cancel-request`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Refresh the list after requesting
+      fetchMyBookings();
+      alert('Cancellation requested successfully.');
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to request cancellation.');
+    }
+  }
+
   // Formats a date string like "2024-06-20" to "Thu, 20 Jun 2024"
   function formatDate(dateString) {
     const date = new Date(dateString);
@@ -115,9 +131,31 @@ function MyBookingsPage() {
               LKR {booking.totalPrice}
             </div>
 
-            {/* Payment status badge */}
-            <div>
-              <span className="status-paid">✓ Paid</span>
+            {/* Status and Action Buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div>
+                {booking.paymentStatus === 'paid' && booking.cancelStatus === 'none' && (
+                  <span className="status-paid">✓ Paid</span>
+                )}
+                {booking.cancelStatus === 'requested' && (
+                  <span style={{ color: '#eab308', fontWeight: 'bold' }}>⏳ Cancellation Requested</span>
+                )}
+                {booking.cancelStatus === 'refunded' && (
+                  <span style={{ color: '#ef4444', fontWeight: 'bold' }}>✓ Cancelled & Refunded</span>
+                )}
+                {booking.cancelStatus === 'rejected' && (
+                  <span style={{ color: '#ef4444', fontWeight: 'bold' }}>❌ Cancel Request Rejected</span>
+                )}
+              </div>
+              
+              {booking.cancelStatus === 'none' && booking.paymentStatus === 'paid' && (
+                <button 
+                  onClick={() => handleCancelRequest(booking._id)}
+                  style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                  Cancel Booking
+                </button>
+              )}
             </div>
 
           </div>

@@ -21,8 +21,12 @@ function AdminDashboard() {
   }, [currentUser]);
 
   return (
-    <div>
-      <h2 className="admin-title">Admin Dashboard</h2>
+    <div className="admin-page-container">
+      <h2 className="admin-title">
+        <span className="logo-gk">GK</span> 
+        <span className="logo-cine">Admin</span> 
+        <span className="logo-max">Dashboard</span>
+      </h2>
 
       {/* Tab buttons */}
       <div className="admin-tabs">
@@ -542,9 +546,28 @@ function AllBookingsTable() {
     }
   }
 
-  // Calculates total revenue by adding up all booking prices
+  // Calculates total revenue by adding up all booking prices (exclude refunded)
   function calculateTotalRevenue() {
-    return allBookings.reduce((total, booking) => total + booking.totalPrice, 0);
+    return allBookings
+      .filter(b => b.cancelStatus !== 'refunded')
+      .reduce((total, booking) => total + booking.totalPrice, 0);
+  }
+
+  // Handle Approve/Reject Cancel Request
+  async function handleCancelRequest(bookingId, action) {
+    if (!window.confirm(`Are you sure you want to ${action} this cancellation?`)) return;
+    try {
+      const token = localStorage.getItem('gkToken');
+      await axios.put(
+        `http://localhost:5000/api/bookings/${bookingId}/handle-cancel`,
+        { action },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert(`Cancellation ${action}ed successfully.`);
+      fetchAllBookings(); // refresh list
+    } catch (error) {
+      alert(error.response?.data?.message || `Failed to ${action} cancellation.`);
+    }
   }
 
   if (isLoading) return <div className="loading">Loading bookings...</div>;
@@ -618,17 +641,37 @@ function AllBookingsTable() {
                     LKR {booking.totalPrice}
                   </td>
 
-                  {/* Payment status */}
+                  {/* Payment status & Actions */}
                   <td>
-                    <span style={{
-                      background: '#16a34a',
-                      color: 'white',
-                      padding: '2px 10px',
-                      borderRadius: '20px',
-                      fontSize: '12px'
-                    }}>
-                      {booking.paymentStatus}
-                    </span>
+                    <div style={{ marginBottom: '5px' }}>
+                      {booking.paymentStatus === 'paid' && booking.cancelStatus === 'none' && (
+                        <span style={{ background: '#16a34a', color: 'white', padding: '2px 8px', borderRadius: '20px', fontSize: '12px' }}>Paid</span>
+                      )}
+                      {booking.cancelStatus === 'requested' && (
+                        <span style={{ background: '#eab308', color: 'black', padding: '2px 8px', borderRadius: '20px', fontSize: '12px' }}>Cancel Requested</span>
+                      )}
+                      {booking.cancelStatus === 'refunded' && (
+                        <span style={{ background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: '20px', fontSize: '12px' }}>Refunded</span>
+                      )}
+                      {booking.cancelStatus === 'rejected' && (
+                        <span style={{ background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: '20px', fontSize: '12px' }}>Reject Cancel</span>
+                      )}
+                    </div>
+                    
+                    {booking.cancelStatus === 'requested' && (
+                      <div style={{ display: 'flex', gap: '5px' }}>
+                        <button 
+                          onClick={() => handleCancelRequest(booking._id, 'approve')}
+                          style={{ background: '#16a34a', color: 'white', border: 'none', padding: '3px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
+                          Approve
+                        </button>
+                        <button 
+                          onClick={() => handleCancelRequest(booking._id, 'reject')}
+                          style={{ background: '#ef4444', color: 'white', border: 'none', padding: '3px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
+                          Reject
+                        </button>
+                      </div>
+                    )}
                   </td>
 
                 </tr>

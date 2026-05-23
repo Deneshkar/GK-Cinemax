@@ -52,8 +52,12 @@ function LoginPage() {
       <div className="auth-card">
 
         {/* Title */}
-        <h2>🎬 Welcome Back</h2>
-        <p className="auth-subtitle">Login to your GK Cinemax account</p>
+        <h2>
+          <span className="logo-gk">GK</span> 
+          <span className="logo-cine">Cine</span>
+          <span className="logo-max">max</span>
+        </h2>
+        <p className="auth-subtitle">Welcome back! Login to book your tickets.</p>
 
         {/* Error message */}
         {errorMessage && (

@@ -1,91 +1,262 @@
 /* The hero banner at the top of the home page */
 .hero {
-  background: linear-gradient(135deg, #1a0000, #0a0a0a);
-  border: 1px solid #e50914;
-  border-radius: 12px;
-  padding: 60px 40px;
+  position: relative;
+  /* Blend dark cinema background with subtle blue/yellow highlights matching gate and sky */
+  background: linear-gradient(-45deg, #0a0a0a, #112240, #0a0a0a, #1a1a00);
+  background-size: 400% 400%;
+  animation: heroGradient 10s ease infinite;
+  border-radius: 16px;
+  padding: 80px 40px;
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 50px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 0 2px rgba(255, 215, 0, 0.1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Glassmorphism shine effect inside hero */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.08) 0%, transparent 60%);
+  animation: pulseRotate 15s linear infinite;
+  z-index: -1;
+}
+
+@keyframes heroGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulseRotate {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
 }
 
 /* The big title in the hero banner */
 .hero h1 {
-  font-size: 42px;
-  color: #e50914;
-  margin-bottom: 10px;
+  font-size: 64px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  animation: floatText 3s ease-in-out infinite;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+
+.hero .logo-gk { color: #FFD700; text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+.hero .logo-cine { color: #E31837; margin-left: 10px; text-shadow: 0 0 20px rgba(227, 24, 55, 0.5); }
+.hero .logo-max { color: #1976D2; text-shadow: 0 0 20px rgba(25, 118, 210, 0.5); }
+
+@keyframes floatText {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 /* The subtitle under the hero title */
 .hero p {
-  font-size: 18px;
-  color: #aaaaaa;
+  font-size: 22px;
+  color: #e0e0e0;
+  font-weight: 500;
+  letter-spacing: 1px;
+  opacity: 0.95;
+  animation: floatText 3s ease-in-out infinite;
+  animation-delay: 0.2s; /* slight delay behind title */
 }
 
 /* The "Now Showing" section heading */
 .section-title {
-  font-size: 26px;
-  font-weight: bold;
-  margin-bottom: 24px;
-  border-left: 4px solid #e50914;
-  padding-left: 12px;
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 30px;
+  position: relative;
+  display: inline-block;
+  padding-right: 20px;
+  color: #FFFFFF;
+}
+
+/* Animated underline for section title - Yellow matches building */
+.section-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(90deg, #FFD700, #E31837); /* Yellow/Red accent */
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.section-title:hover::after {
+  width: 100%;
 }
 
 /* The grid that holds all movie cards */
 .movies-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 30px;
+  padding-bottom: 40px;
 }
 
 /* Each individual movie card */
 .movie-card {
-  background-color: #1a1a1a;
-  border-radius: 10px;
+  background: #111111;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   text-decoration: none;
   color: white;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  /* Fallback visibility in case animation doesn't run */
+  opacity: 0; 
+  animation: fadeInUp 0.6s ease-out forwards;
 }
 
-/* Movie card hover — lifts up slightly */
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Movie card hover — lifts up and glows */
 .movie-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 30px rgba(229, 9, 20, 0.3);
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(229, 9, 20, 0.25);
+  border-color: rgba(229, 9, 20, 0.5);
+}
+
+/* Poster container for hidden overflow zooming */
+.poster-container {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  overflow: hidden;
 }
 
 /* The movie poster image */
 .movie-card img {
   width: 100%;
-  height: 280px;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.movie-card:hover img {
+  transform: scale(1.08);
+}
+
+/* Dark overlay on hover with button */
+.poster-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.movie-card:hover .poster-overlay {
+  opacity: 1;
+}
+
+/* Cool view details button inside overlay */
+.view-details-btn {
+  background: #e50914;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  text-transform: uppercase;
+  transform: translateY(20px);
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.5);
+}
+
+.movie-card:hover .view-details-btn {
+  transform: translateY(0);
 }
 
 /* The text section below the poster */
 .movie-card-info {
-  padding: 14px;
+  padding: 18px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* The movie title */
 .movie-card-info h3 {
-  font-size: 16px;
-  margin-bottom: 6px;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: 0.5px;
 }
 
 /* The language and duration info */
-.movie-card-info p {
+.movie-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 13px;
-  color: #aaaaaa;
+  color: #bbbbbb;
+  margin-top: auto;
+}
+
+.language-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.duration {
+  font-family: monospace;
+  font-size: 14px;
+  color: #e50914;
+}
+
+/* Loading animation modern upgrade */
+.loading {
+  text-align: center;
+  padding: 100px;
+  color: #e50914;
+  font-size: 20px;
+  font-weight: bold;
+  animation: pulseText 1.5s infinite;
+}
+
+@keyframes pulseText {
+  0%, 100% { opacity: 0.5; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1); }
 }
 
 /* Shown when there are no movies in the database yet */
 .no-movies {
   text-align: center;
-  padding: 60px;
-  color: #666;
-  font-size: 18px;
+  padding: 80px;
+  color: #888;
+  font-size: 20px;
+  background: #111;
+  border-radius: 12px;
+  border: 1px dashed #333;
 }

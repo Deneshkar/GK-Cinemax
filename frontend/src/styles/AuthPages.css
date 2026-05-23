@@ -4,93 +4,156 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Add subtle background glow representing the cinema colors */
+  background: radial-gradient(circle at top left, rgba(255, 215, 0, 0.05), transparent 40%),
+              radial-gradient(circle at bottom right, rgba(227, 24, 55, 0.05), transparent 40%);
 }
 
-/* The white card that holds the form */
+/* The card that holds the form */
 .auth-card {
-  background-color: #1a1a1a;
-  border-radius: 12px;
-  padding: 40px;
+  background-color: #0d0d0d;
+  border-radius: 16px;
+  padding: 50px 40px;
   width: 100%;
-  max-width: 420px;
-  border: 1px solid #333;
+  max-width: 440px;
+  border: 1px solid rgba(255, 215, 0, 0.2); /* Subtle yellow border */
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7), 0 0 20px rgba(227, 24, 55, 0.1);
+  position: relative;
+  overflow: hidden;
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+/* Top accent line matching the cinema vibe */
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #FFD700, #E31837, #1976D2);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* The title at the top of the form */
 .auth-card h2 {
-  font-size: 28px;
+  font-size: 32px;
   margin-bottom: 8px;
-  color: #ffffff;
   text-align: center;
+  font-weight: 900;
+  letter-spacing: 1px;
 }
+
+/* Specific colors for the title simulating the logo */
+.auth-card .logo-gk { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+.auth-card .logo-cine { color: #E31837; margin-left: 6px; text-shadow: 0 0 10px rgba(227, 24, 55, 0.3); }
+.auth-card .logo-max { color: #1976D2; text-shadow: 0 0 10px rgba(25, 118, 210, 0.3); }
 
 /* The subtitle under the title */
 .auth-subtitle {
   text-align: center;
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 30px;
+  color: #aaaaaa;
+  font-size: 15px;
+  margin-bottom: 40px;
+  letter-spacing: 0.5px;
 }
 
 /* Each form field label */
 .auth-card label {
   display: block;
-  font-size: 14px;
-  color: #aaa;
+  font-size: 13px;
+  color: #eeeeee;
   margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+/* Input fields inside auth card */
+.auth-card .input-field {
+  background-color: #151515;
+  border: 1px solid #333;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.auth-card .input-field:focus {
+  border-color: #FFD700; /* Yellow focus ring */
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+  background-color: #1a1a1a;
 }
 
 /* The submit button — full width */
 .auth-submit-btn {
   width: 100%;
-  padding: 14px;
-  background-color: #e50914;
+  padding: 16px;
+  background: linear-gradient(135deg, #E31837, #b30b24);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
   cursor: pointer;
-  margin-top: 8px;
-  transition: background-color 0.2s;
+  margin-top: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(227, 24, 55, 0.4);
 }
 
 .auth-submit-btn:hover {
-  background-color: #b20710;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(227, 24, 55, 0.6);
 }
 
 /* Disabled state while submitting */
 .auth-submit-btn:disabled {
-  background-color: #555;
+  background: #444;
+  color: #888;
+  box-shadow: none;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* The error message shown in red below the form */
 .auth-error {
-  background-color: #2a0000;
-  border: 1px solid #e50914;
+  background-color: rgba(227, 24, 55, 0.1);
+  border: 1px solid rgba(227, 24, 55, 0.5);
   color: #ff6b6b;
   padding: 12px;
   border-radius: 6px;
   font-size: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   text-align: center;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 
 /* The link at the bottom to switch between login and register */
 .auth-switch {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
   font-size: 14px;
-  color: #666;
+  color: #888;
 }
 
 .auth-switch a {
-  color: #e50914;
+  color: #FFD700;
   text-decoration: none;
   font-weight: bold;
+  transition: color 0.2s;
 }
 
 .auth-switch a:hover {
+  color: #fff;
   text-decoration: underline;
 }

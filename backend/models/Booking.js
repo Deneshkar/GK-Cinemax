@@ -32,7 +32,7 @@ const bookingSchema = new mongoose.Schema({
   // Was the payment successful or is it still pending?
   paymentStatus: {
     type: String,
-    enum: ['pending', 'paid'],
+    enum: ['pending', 'paid', 'refunded'],
     default: 'pending'
   },
 
@@ -46,6 +46,13 @@ const bookingSchema = new mongoose.Schema({
   razorpayPaymentId: {
     type: String,
     default: ''
+  },
+  
+  // Status of the booking cancellation request
+  cancelStatus: {
+    type: String,
+    enum: ['none', 'requested', 'approved', 'rejected', 'refunded'],
+    default: 'none'
   }
 
 }, { timestamps: true });

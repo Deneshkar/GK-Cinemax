@@ -1,74 +1,89 @@
 /* Page wrapper */
 .edit-movie-container {
   max-width: 600px;
+  padding: 20px 0;
 }
 
 /* Page title */
 .edit-movie-title {
-  font-size: 26px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  border-left: 4px solid #e50914;
-  padding-left: 12px;
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 24px;
+  border-left: 4px solid #1976D2; /* Blue left accent */
+  padding-left: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 /* Current poster preview */
 .poster-preview {
-  margin-bottom: 24px;
+  margin-bottom: 30px;
   text-align: center;
 }
 
 .poster-preview img {
-  width: 160px;
-  height: 220px;
+  width: 180px;
+  height: 260px;
   object-fit: cover;
-  border-radius: 8px;
-  border: 2px solid #333;
+  border-radius: 12px;
+  border: 2px solid #FFD700; /* Yellow outline for current poster */
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.2);
 }
 
 .poster-preview p {
-  color: #666;
-  font-size: 13px;
-  margin-top: 6px;
+  color: #aaa;
+  font-size: 14px;
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: bold;
 }
 
 /* The form card */
 .edit-form-card {
-  background-color: #1a1a1a;
-  border-radius: 12px;
-  padding: 30px;
-  border: 1px solid #333;
+  background-color: #0b0b0b;
+  border-radius: 16px;
+  padding: 40px;
+  border: 1px solid rgba(255, 215, 0, 0.2); /* Yellow border */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.4s ease-out;
 }
 
 .edit-form-card label {
   display: block;
-  font-size: 14px;
-  color: #aaa;
-  margin-bottom: 6px;
+  font-size: 13px;
+  color: #ccc;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
 /* Save and Delete buttons side by side */
 .edit-btn-row {
   display: flex;
-  gap: 12px;
-  margin-top: 8px;
+  gap: 16px;
+  margin-top: 16px;
 }
 
 /* The red delete button */
 .btn-delete {
-  background-color: #7f1d1d;
-  color: white;
-  border: 1px solid #e50914;
+  background-color: transparent;
+  color: #E31837;
+  border: 2px solid #E31837;
   padding: 12px 24px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
-  transition: background-color 0.2s;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
 }
 
 .btn-delete:hover {
-  background-color: #991b1b;
+  background-color: #E31837;
+  color: white;
+  box-shadow: 0 6px 15px rgba(227, 24, 55, 0.4);
 }
 
 /* Reuse these from AdminDashboard */

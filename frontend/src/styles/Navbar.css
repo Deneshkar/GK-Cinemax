@@ -1,64 +1,102 @@
 /* The main navbar bar across the top */
 .navbar {
-  background-color: #111111;
-  border-bottom: 2px solid #e50914;
+  background-color: #0b0b0b;
+  border-bottom: 3px solid #FFD700; /* Building yellow */
   padding: 0 40px;
-  height: 64px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.15); /* Golden yellow glow */
 }
 
 /* The GK Cinemax logo text on the left */
 .navbar-logo {
-  font-size: 22px;
-  font-weight: bold;
-  color: #e50914;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 24px;
+  font-weight: 900;
   text-decoration: none;
   letter-spacing: 1px;
+  text-transform: uppercase;
 }
+
+.logo-text {
+  display: flex;
+}
+
+.logo-gk { color: #FFD700; } /* Yellow */
+.logo-cine { color: #E31837; margin-left: 6px; } /* Red */
+.logo-max { color: #1976D2; } /* Blue */
 
 /* The group of links on the right side */
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 30px;
+  font-weight: 600;
 }
 
 /* Each individual nav link */
 .navbar-links a {
-  color: #cccccc;
+  color: #eeeeee;
   text-decoration: none;
   font-size: 15px;
-  transition: color 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 /* Nav link hover effect */
 .navbar-links a:hover {
-  color: #ffffff;
+  color: #FFD700;
+}
+
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0%;
+  height: 2px;
+  background-color: #FFD700;
+  transition: width 0.3s ease;
+}
+
+.navbar-links a:hover::after {
+  width: 100%;
 }
 
 /* The logout button styled to look like a link */
 .logout-btn {
-  background: none;
-  border: none;
-  color: #cccccc;
-  font-size: 15px;
+  background: transparent;
+  border: 2px solid #E31837; /* Match red accent */
+  color: #E31837;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 4px;
   cursor: pointer;
-  padding: 0;
-  transition: color 0.2s;
+  padding: 6px 16px;
+  transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-  color: #e50914;
+  background-color: #E31837;
+  color: white;
+  box-shadow: 0 0 12px rgba(227, 24, 55, 0.4);
 }
 
 /* The username shown in the navbar when logged in */
 .navbar-username {
-  color: #e50914;
+  color: #FFD700;
   font-weight: bold;
   font-size: 15px;
+  border-right: 2px solid #333;
+  padding-right: 24px;
 }

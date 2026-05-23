@@ -151,4 +151,79 @@ async function getAllBookings(req, res) {
   }
 }
 
-module.exports = { createBooking, getMyBookings, getOneBooking, getAllBookings };
+// User requests cancellation of a booking
+async function requestCancellation(req, res) {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    if (booking.userId.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Not authorized to cancel this booking' });
+    }
+
+    if (booking.cancelStatus !== 'none') {
+      return res.status(400).json({ message: 'Cancellation already requested or processed' });
+    }
+
+    booking.cancelStatus = 'requested';
+    await booking.save();
+
+    res.json({ message: 'Cancellation requested successfully', booking });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+// Admin approves/rejects cancellation and processes refund
+async function handleCancellationRequest(req, res) {
+  try {
+    const { action } = req.body; // 'approve' or 'reject'
+    const booking = await Booking.findById(req.params.id).populate('showtimeId');
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    if (booking.cancelStatus !== 'requested') {
+      return res.status(400).json({ message: 'Booking is not pending cancellation' });
+    }
+
+    if (action === 'approve') {
+      // 1. Remove booked seats from showtime
+      if (booking.showtimeId) {
+        // If showtimeId is populated, it's an object with _id, otherwise it's just the ID string
+        const showtimeIdStr = booking.showtimeId._id || booking.showtimeId;
+        const showtime = await Showtime.findById(showtimeIdStr);
+        if (showtime) {
+          showtime.bookedSeats = showtime.bookedSeats.filter(
+            seat => !booking.seats.includes(seat)
+          );
+          await showtime.save();
+        }
+      }
+
+      // 2. Mark as refunded
+      booking.cancelStatus = 'refunded';
+      booking.paymentStatus = 'refunded'; // optionally add this to paymentStatus enum if needed or leave it
+      await booking.save();
+
+      // Note: Actual payment gateway refund API call (like Razorpay's refund) would go here in a production env. 
+      // For now, we simulate it by updating the DB.
+
+      return res.json({ message: 'Cancellation approved and seats freed', booking });
+    } else if (action === 'reject') {
+      booking.cancelStatus = 'rejected';
+      await booking.save();
+      return res.json({ message: 'Cancellation request rejected', booking });
+    } else {
+      return res.status(400).json({ message: 'Invalid action. Use "approve" or "reject"' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+module.exports = { createBooking, getMyBookings, getOneBooking, getAllBookings, requestCancellation, handleCancellationRequest };

@@ -70,8 +70,12 @@ function RegisterPage() {
       <div className="auth-card">
 
         {/* Title */}
-        <h2>🎬 Create Account</h2>
-        <p className="auth-subtitle">Join GK Cinemax and start booking tickets</p>
+        <h2>
+          <span className="logo-gk">GK</span> 
+          <span className="logo-cine">Cine</span>
+          <span className="logo-max">max</span>
+        </h2>
+        <p className="auth-subtitle">Join us and start booking tickets</p>
 
         {/* Error message */}
         {errorMessage && (

@@ -67,7 +67,11 @@ function HomePage() {
 
       {/* Hero banner at the top */}
       <div className="hero">
-        <h1>🎬 GK Cinemax</h1>
+        <h1>
+          <span className="logo-gk">GK</span> 
+          <span className="logo-cine">Cine</span>
+          <span className="logo-max">max</span>
+        </h1>
         <p>Pandiruppu's Premier Cinema Experience</p>
       </div>
 
@@ -83,22 +87,29 @@ function HomePage() {
 
       {/* Grid of movie cards */}
       <div className="movies-grid">
-        {movieList.map((movie) => (
+        {movieList.map((movie, index) => (
 
           <div
             key={movie._id}
             className="movie-card"
+            style={{ animationDelay: `${index * 0.1}s` }}
             onClick={() => handleMovieCardClick(movie._id)}
           >
 
-            {/* Movie poster */}
-            <img src={movie.posterUrl} alt={movie.title} />
+            {/* Movie poster container for zoom effect */}
+            <div className="poster-container">
+              <img src={movie.posterUrl} alt={movie.title} />
+              <div className="poster-overlay">
+                <span className="view-details-btn">View Details</span>
+              </div>
+            </div>
 
             {/* Movie info below the poster */}
             <div className="movie-card-info">
               <h3>{movie.title}</h3>
-              <p>
-                {movie.language} • {formatDuration(movie.duration)}
+              <p className="movie-meta">
+                <span className="language-badge">{movie.language}</span>
+                <span className="duration">⏳ {formatDuration(movie.duration)}</span>
               </p>
             </div>
 

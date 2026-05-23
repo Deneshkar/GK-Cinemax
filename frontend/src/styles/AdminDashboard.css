@@ -1,18 +1,29 @@
-/* The page title */
-.admin-title {
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 24px;
-  border-left: 4px solid #e50914;
-  padding-left: 12px;
+/* Admin page wrapper for glow effects */
+.admin-page-container {
+  padding: 20px 0;
+  position: relative;
 }
+
+/* Page title */
+.admin-title {
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 24px;
+  display: inline-block;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.admin-title .logo-gk { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+.admin-title .logo-cine { color: #E31837; margin-left: 6px; margin-right: 6px; text-shadow: 0 0 10px rgba(227, 24, 55, 0.4); }
+.admin-title .logo-max { color: #1976D2; text-shadow: 0 0 10px rgba(25, 118, 210, 0.4); }
 
 /* The tab buttons row */
 .admin-tabs {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 30px;
-  border-bottom: 1px solid #333;
+  border-bottom: 2px solid #222;
   padding-bottom: 12px;
 }
 
@@ -20,113 +31,145 @@
 .tab-btn {
   background: none;
   border: none;
-  color: #aaa;
+  color: #888;
   font-size: 16px;
   cursor: pointer;
-  padding: 8px 20px;
+  padding: 10px 24px;
   border-radius: 6px;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
 }
 
 .tab-btn:hover {
   color: #fff;
-  background-color: #222;
+  background-color: rgba(255, 215, 0, 0.1);
 }
 
-/* The active tab — highlighted in red */
+/* The active tab — highlighted in yellow */
 .tab-btn.active {
-  background-color: #e50914;
-  color: white;
+  background-color: #FFD700;
+  color: #000;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
 }
 
 /* The form card for adding movies and showtimes */
 .admin-form-card {
-  background-color: #1a1a1a;
-  border-radius: 12px;
-  padding: 30px;
-  max-width: 560px;
-  border: 1px solid #333;
+  background-color: #0b0b0b;
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 600px;
+  border: 1px solid rgba(25, 118, 210, 0.3); /* Blue accent border */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(25, 118, 210, 0.1);
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Each form field label */
 .admin-form-card label {
   display: block;
-  font-size: 14px;
-  color: #aaa;
-  margin-bottom: 6px;
+  font-size: 13px;
+  color: #ccc;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 /* The form title */
 .admin-form-card h3 {
-  font-size: 20px;
-  margin-bottom: 24px;
+  font-size: 24px;
+  margin-bottom: 30px;
   color: #ffffff;
+  border-left: 4px solid #1976D2; /* Blue left accent */
+  padding-left: 12px;
 }
 
 /* File input for poster upload */
 .file-input {
   width: 100%;
-  padding: 10px;
-  background-color: #222;
-  border: 1px dashed #444;
-  border-radius: 6px;
+  padding: 12px;
+  background-color: #151515;
+  border: 1px dashed #1976D2; /* Blue dashed outline */
+  border-radius: 8px;
   color: #aaa;
   font-size: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-input:hover {
+  background-color: rgba(25, 118, 210, 0.05);
+  border-color: #FFD700;
+  color: #fff;
 }
 
 /* Success message shown after form submit */
 .success-message {
-  background-color: #052e16;
+  background-color: rgba(74, 222, 128, 0.1);
   border: 1px solid #16a34a;
   color: #4ade80;
-  padding: 12px;
-  border-radius: 6px;
+  padding: 14px;
+  border-radius: 8px;
   font-size: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   text-align: center;
+  font-weight: bold;
 }
 
 /* Error message shown if form fails */
 .admin-error {
-  background-color: #2a0000;
-  border: 1px solid #e50914;
+  background-color: rgba(227, 24, 55, 0.1);
+  border: 1px solid #E31837;
   color: #ff6b6b;
-  padding: 12px;
-  border-radius: 6px;
+  padding: 14px;
+  border-radius: 8px;
   font-size: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   text-align: center;
+  font-weight: bold;
+  animation: shake 0.4s ease-in-out;
 }
 
 /* The bookings table wrapper */
 .bookings-table-wrapper {
   overflow-x: auto;
+  border-radius: 12px;
+  background-color: #0b0b0b;
+  border: 1px solid #222;
 }
 
 /* The bookings table */
 .bookings-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* Table header row */
 .bookings-table th {
-  background-color: #222;
-  color: #aaa;
-  padding: 12px 16px;
+  background-color: #151515;
+  color: #FFD700; /* Yellow headers */
+  padding: 16px;
   text-align: left;
-  font-weight: 600;
-  border-bottom: 1px solid #333;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid #333;
 }
 
 /* Table data cells */
 .bookings-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #222;
-  color: #ccc;
+  padding: 16px;
+  border-bottom: 1px solid #1a1a1a;
+  color: #eee;
   vertical-align: top;
 }
 
@@ -135,16 +178,21 @@
   background-color: #111;
 }
 
+.bookings-table tr:hover td {
+  background-color: rgba(25, 118, 210, 0.1); /* Blue hover effect */
+}
+
 /* The revenue summary card */
 .revenue-card {
-  background-color: #1a0000;
-  border: 1px solid #e50914;
-  border-radius: 10px;
-  padding: 20px 30px;
-  margin-bottom: 24px;
+  background: linear-gradient(-45deg, #0a0a0a, #112240, #0a0a0a);
+  border: 1px solid rgba(255, 215, 0, 0.3); /* Yellow border */
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .revenue-card h3 {

@@ -19,7 +19,12 @@ function Navbar() {
 
       {/* Logo on the left */}
       <Link to="/" className="navbar-logo">
-        🎬 GK Cinemax
+        <span className="logo-icon">🎥</span>
+        <span className="logo-text">
+          <span className="logo-gk">GK</span>
+          <span className="logo-cine">Cine</span>
+          <span className="logo-max">max</span>
+        </span>
       </Link>
 
       {/* Links on the right */}
