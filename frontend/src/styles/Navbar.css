@@ -1,0 +1,64 @@
+/* The main navbar bar across the top */
+.navbar {
+  background-color: #111111;
+  border-bottom: 2px solid #e50914;
+  padding: 0 40px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* The GK Cinemax logo text on the left */
+.navbar-logo {
+  font-size: 22px;
+  font-weight: bold;
+  color: #e50914;
+  text-decoration: none;
+  letter-spacing: 1px;
+}
+
+/* The group of links on the right side */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Each individual nav link */
+.navbar-links a {
+  color: #cccccc;
+  text-decoration: none;
+  font-size: 15px;
+  transition: color 0.2s;
+}
+
+/* Nav link hover effect */
+.navbar-links a:hover {
+  color: #ffffff;
+}
+
+/* The logout button styled to look like a link */
+.logout-btn {
+  background: none;
+  border: none;
+  color: #cccccc;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.logout-btn:hover {
+  color: #e50914;
+}
+
+/* The username shown in the navbar when logged in */
+.navbar-username {
+  color: #e50914;
+  font-weight: bold;
+  font-size: 15px;
+}

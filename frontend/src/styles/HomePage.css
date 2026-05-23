@@ -1,0 +1,91 @@
+/* The hero banner at the top of the home page */
+.hero {
+  background: linear-gradient(135deg, #1a0000, #0a0a0a);
+  border: 1px solid #e50914;
+  border-radius: 12px;
+  padding: 60px 40px;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* The big title in the hero banner */
+.hero h1 {
+  font-size: 42px;
+  color: #e50914;
+  margin-bottom: 10px;
+}
+
+/* The subtitle under the hero title */
+.hero p {
+  font-size: 18px;
+  color: #aaaaaa;
+}
+
+/* The "Now Showing" section heading */
+.section-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  border-left: 4px solid #e50914;
+  padding-left: 12px;
+}
+
+/* The grid that holds all movie cards */
+.movies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+/* Each individual movie card */
+.movie-card {
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: white;
+  display: block;
+}
+
+/* Movie card hover — lifts up slightly */
+.movie-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(229, 9, 20, 0.3);
+}
+
+/* The movie poster image */
+.movie-card img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+}
+
+/* The text section below the poster */
+.movie-card-info {
+  padding: 14px;
+}
+
+/* The movie title */
+.movie-card-info h3 {
+  font-size: 16px;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The language and duration info */
+.movie-card-info p {
+  font-size: 13px;
+  color: #aaaaaa;
+}
+
+/* Shown when there are no movies in the database yet */
+.no-movies {
+  text-align: center;
+  padding: 60px;
+  color: #666;
+  font-size: 18px;
+}

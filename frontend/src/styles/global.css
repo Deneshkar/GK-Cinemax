@@ -1,0 +1,93 @@
+/* Remove default browser spacing and use border-box sizing everywhere */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Set the base font and background color for the whole site */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0a0a0a;
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+/* The main content area sits below the navbar */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* A reusable card style used across multiple pages */
+.card {
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* A reusable red button used across multiple pages */
+.btn-primary {
+  background-color: #e50914;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Button hover effect */
+.btn-primary:hover {
+  background-color: #b20710;
+}
+
+/* A reusable grey button for secondary actions */
+.btn-secondary {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-secondary:hover {
+  background-color: #444;
+}
+
+/* Reusable input field style */
+.input-field {
+  width: 100%;
+  padding: 12px;
+  background-color: #222;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #e50914;
+}
+
+/* Shows a loading message centered on the page */
+.loading {
+  text-align: center;
+  padding: 60px;
+  font-size: 18px;
+  color: #aaa;
+}
+
+/* Shows an error message in red */
+.error {
+  color: #e50914;
+  text-align: center;
+  padding: 20px;
+}
