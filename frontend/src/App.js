@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import AdminDashboard from './pages/AdminDashboard';
+import EditMoviePage from './pages/EditMoviePage';
 
 // Components
 import Navbar from './components/Navbar';
@@ -30,6 +31,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/my-bookings" element={<MyBookingsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/movies/:id" element={<EditMoviePage />} />
         </Routes>
       </div>
     </BrowserRouter>

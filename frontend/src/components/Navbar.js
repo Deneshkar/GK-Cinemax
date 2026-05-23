@@ -38,15 +38,22 @@ function Navbar() {
         {/* Show these links only if the user IS logged in */}
         {currentUser && (
           <>
-            <Link to="/my-bookings">My Bookings</Link>
+            {/* Admin sees Dashboard, regular user sees My Bookings */}
+            {currentUser.isAdmin
+              ? <Link to="/admin">Dashboard</Link>
+              : <Link to="/my-bookings">My Bookings</Link>
+            }
 
-            {/* Show Admin link only if the user is an admin */}
-            {currentUser.isAdmin && (
-              <Link to="/admin">Admin</Link>
-            )}
+            <span className="navbar-username">
+              Hi, {currentUser.name}
+            </span>
 
-            <span className="navbar-username">Hi, {currentUser.name}</span>
-            <button className="logout-btn" onClick={handleLogout}>Logout</button>
+            <button
+              className="logout-btn"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
           </>
         )}
 

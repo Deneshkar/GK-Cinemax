@@ -1,0 +1,126 @@
+/* The page title */
+.bookings-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  border-left: 4px solid #e50914;
+  padding-left: 12px;
+}
+
+/* Each individual booking card */
+.booking-card {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid #333;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* The left section with movie and booking info */
+.booking-info {
+  flex: 1;
+}
+
+/* The movie title in the booking card */
+.booking-movie-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+/* Each detail line in the booking */
+.booking-detail {
+  font-size: 14px;
+  color: #aaaaaa;
+  margin-bottom: 6px;
+}
+
+/* The seat tags shown as badges */
+.booking-seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+/* Each individual seat badge */
+.seat-badge {
+  background-color: #16a34a;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* The total price shown in red */
+.booking-total {
+  font-size: 18px;
+  font-weight: bold;
+  color: #e50914;
+  margin-top: 8px;
+}
+
+/* The paid status badge */
+.status-paid {
+  display: inline-block;
+  background-color: #16a34a;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+/* The right section with the QR code */
+.booking-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The QR code image */
+.booking-qr img {
+  width: 140px;
+  height: 140px;
+  border-radius: 8px;
+  background-color: white;
+  padding: 6px;
+}
+
+/* The label under the QR code */
+.booking-qr p {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+/* Shown when the user has no bookings yet */
+.no-bookings {
+  text-align: center;
+  padding: 80px 20px;
+  color: #666;
+}
+
+.no-bookings p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+/* On small screens stack info and QR vertically */
+@media (max-width: 600px) {
+  .booking-card {
+    flex-direction: column;
+  }
+  .booking-qr img {
+    width: 100px;
+    height: 100px;
+  }
+}

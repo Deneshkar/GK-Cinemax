@@ -1,0 +1,96 @@
+/* The outer wrapper that centers the form on the page */
+.auth-container {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The white card that holds the form */
+.auth-card {
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid #333;
+}
+
+/* The title at the top of the form */
+.auth-card h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: #ffffff;
+  text-align: center;
+}
+
+/* The subtitle under the title */
+.auth-subtitle {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+/* Each form field label */
+.auth-card label {
+  display: block;
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+/* The submit button — full width */
+.auth-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #e50914;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.2s;
+}
+
+.auth-submit-btn:hover {
+  background-color: #b20710;
+}
+
+/* Disabled state while submitting */
+.auth-submit-btn:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+/* The error message shown in red below the form */
+.auth-error {
+  background-color: #2a0000;
+  border: 1px solid #e50914;
+  color: #ff6b6b;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* The link at the bottom to switch between login and register */
+.auth-switch {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.auth-switch a {
+  color: #e50914;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}

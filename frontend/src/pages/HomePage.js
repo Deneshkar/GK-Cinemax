@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
 import axios from 'axios';
 import '../styles/HomePage.css';
 
 // The home page shows a grid of all currently showing movies
 function HomePage() {
+
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
 
   // movieList holds the array of movies from the backend
   const [movieList, setMovieList] = useState([]);
@@ -39,6 +43,15 @@ function HomePage() {
     return `${hours}h ${mins}m`;
   }
 
+  // Sends admin to edit page, sends regular user to movie details page
+  function handleMovieCardClick(movieId) {
+    if (currentUser && currentUser.isAdmin) {
+      navigate(`/admin/movies/${movieId}`);
+    } else {
+      navigate(`/movie/${movieId}`);
+    }
+  }
+
   // Show a loading message while waiting for the API
   if (isLoading) {
     return <div className="loading">Loading movies...</div>;
@@ -63,15 +76,20 @@ function HomePage() {
 
       {/* Show a message if no movies are in the database yet */}
       {movieList.length === 0 && (
-        <div className="no-movies">No movies currently showing. Check back soon!</div>
+        <div className="no-movies">
+          No movies currently showing. Check back soon!
+        </div>
       )}
 
       {/* Grid of movie cards */}
       <div className="movies-grid">
         {movieList.map((movie) => (
 
-          // Each card links to that movie's detail page
-          <Link to={`/movie/${movie._id}`} key={movie._id} className="movie-card">
+          <div
+            key={movie._id}
+            className="movie-card"
+            onClick={() => handleMovieCardClick(movie._id)}
+          >
 
             {/* Movie poster */}
             <img src={movie.posterUrl} alt={movie.title} />
@@ -79,10 +97,13 @@ function HomePage() {
             {/* Movie info below the poster */}
             <div className="movie-card-info">
               <h3>{movie.title}</h3>
-              <p>{movie.language} • {formatDuration(movie.duration)}</p>
+              <p>
+                {movie.language} • {formatDuration(movie.duration)}
+              </p>
             </div>
 
-          </Link>
+          </div>
+
         ))}
       </div>
 

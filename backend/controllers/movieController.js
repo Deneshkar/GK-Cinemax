@@ -22,10 +22,13 @@ async function getAllMovies(req, res) {
 async function getOneMovie(req, res) {
   try {
     const movie = await Movie.findById(req.params.id);
+
     if (!movie) {
       return res.status(404).json({ message: 'Movie not found' });
     }
+
     res.json(movie);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -51,11 +54,93 @@ async function addMovie(req, res) {
       posterUrl: uploadResult.secure_url
     });
 
-    res.status(201).json({ message: 'Movie added successfully', movie: newMovie });
+    res.status(201).json({
+      message: 'Movie added successfully',
+      movie: newMovie
+    });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 }
 
-module.exports = { getAllMovies, getOneMovie, addMovie };
+// Updates an existing movie — admin only
+// If a new poster is uploaded it replaces the old one in Cloudinary
+async function updateMovie(req, res) {
+  try {
+    const { title, language, duration, description, isShowing } = req.body;
+
+    // Build the update object with the new values
+    const updateData = {
+      title,
+      language,
+      duration,
+      description,
+      isShowing
+    };
+
+    // If a new poster file was uploaded, upload it to Cloudinary
+    if (req.file) {
+      const uploadResult = await cloudinary.uploader.upload(
+        req.file.path,
+        {
+          folder: 'gk-cinemax-posters'
+        }
+      );
+
+      updateData.posterUrl = uploadResult.secure_url;
+    }
+
+    const updatedMovie = await Movie.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedMovie) {
+      return res.status(404).json({
+        message: 'Movie not found'
+      });
+    }
+
+    res.json({
+      message: 'Movie updated successfully',
+      movie: updatedMovie
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+}
+
+// Deletes a movie by id — admin only
+async function deleteMovie(req, res) {
+  try {
+    const deletedMovie = await Movie.findByIdAndDelete(req.params.id);
+
+    if (!deletedMovie) {
+      return res.status(404).json({
+        message: 'Movie not found'
+      });
+    }
+
+    res.json({
+      message: 'Movie deleted successfully'
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+}
+
+module.exports = {
+  getAllMovies,
+  getOneMovie,
+  addMovie,
+  updateMovie,
+  deleteMovie
+};
