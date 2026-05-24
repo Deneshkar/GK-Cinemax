@@ -33,7 +33,7 @@ function Navbar() {
       <div className="navbar-links">
         <Link 
           to="/" 
-          className={location.pathname === '/' && location.hash !== '#about' ? 'nav-link active' : 'nav-link'}
+          className={location.pathname === '/' && location.hash !== '#about' && location.hash !== '#coming-soon' ? 'nav-link active' : 'nav-link'}
           onClick={(e) => {
             if (location.pathname === '/') {
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -44,8 +44,16 @@ function Navbar() {
         </Link>
 
         <Link
-          to="/coming-soon"
-          className={location.pathname === '/coming-soon' ? 'nav-link active' : 'nav-link'}
+          to="/#coming-soon"
+          className={location.hash === '#coming-soon' ? 'nav-link active' : 'nav-link'}
+          onClick={(e) => {
+            if (location.pathname === '/') {
+              const element = document.getElementById('coming-soon');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+              }
+            }
+          }}
         >
           Coming Soon
         </Link>
@@ -53,6 +61,14 @@ function Navbar() {
         <Link
           to="/#about"
           className={location.hash === '#about' ? 'nav-link active' : 'nav-link'}
+          onClick={(e) => {
+            if (location.pathname === '/') {
+              const element = document.getElementById('about');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+              }
+            }
+          }}
         >
           Experience
         </Link>

@@ -56,11 +56,11 @@ function ComingSoonPage() {
     }
   }
 
-  if (isLoading) return <div className="loading">Loading upcoming movies...</div>;
-  if (errorMessage) return <div className="error">{errorMessage}</div>;
+  if (isLoading) return <div id="coming-soon" className="loading">Loading upcoming movies...</div>;
+  if (errorMessage) return <div id="coming-soon" className="error">{errorMessage}</div>;
 
   return (
-    <div>
+    <div id="coming-soon">
       <h2 className="coming-soon-title">Coming Soon</h2>
       <p className="coming-soon-subtitle">
         Upcoming films arriving at GK Cinemax, Pandiruppu

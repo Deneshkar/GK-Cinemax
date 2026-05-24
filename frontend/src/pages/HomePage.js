@@ -26,7 +26,7 @@ function HomePage() {
         if (element) {
           element.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 50);
+      }, 100);
     }
   }, [isLoading, location.hash]);
 
