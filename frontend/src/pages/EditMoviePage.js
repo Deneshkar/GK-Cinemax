@@ -19,6 +19,8 @@ function EditMoviePage() {
   const [existingPosterUrl, setExistingPosterUrl] = useState('');
   const [newPosterFile, setNewPosterFile]       = useState(null);
   const [isShowing, setIsShowing]               = useState(true);
+  const [isComingSoon, setIsComingSoon]         = useState(false);
+  const [releaseDate, setReleaseDate]           = useState('');
 
   const [isLoading, setIsLoading]       = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,6 +51,8 @@ function EditMoviePage() {
       setMovieDescription(movie.description);
       setExistingPosterUrl(movie.posterUrl);
       setIsShowing(movie.isShowing);
+      setIsComingSoon(movie.comingSoon || false);
+      setReleaseDate(movie.releaseDate || '');
     } catch (error) {
       setErrorMessage('Failed to load movie.');
     } finally {
@@ -72,7 +76,9 @@ function EditMoviePage() {
       formData.append('language',    movieLanguage);
       formData.append('duration',    movieDuration);
       formData.append('description', movieDescription);
-      formData.append('isShowing',   isShowing);
+      formData.append('isShowing',   !isComingSoon);
+      formData.append('comingSoon', isComingSoon);
+      formData.append('releaseDate', releaseDate);
 
       // Only attach a new poster if the admin chose one
       if (newPosterFile) {
@@ -181,17 +187,6 @@ function EditMoviePage() {
             required
           />
 
-          {/* Toggle whether movie is currently showing */}
-          <label>Status</label>
-          <select
-            className="input-field"
-            value={isShowing}
-            onChange={(e) => setIsShowing(e.target.value === 'true')}
-          >
-            <option value="true">Now Showing</option>
-            <option value="false">Not Showing</option>
-          </select>
-
           <label>Replace Poster Image (optional)</label>
           <input
             type="file"
@@ -199,6 +194,30 @@ function EditMoviePage() {
             accept="image/*"
             onChange={(e) => setNewPosterFile(e.target.files[0])}
           />
+
+          {/* Movie status — replaces the old isShowing-only select */}
+          <label>Movie Status</label>
+          <select
+            className="input-field"
+            value={isComingSoon ? 'comingSoon' : 'nowShowing'}
+            onChange={(e) => setIsComingSoon(e.target.value === 'comingSoon')}
+          >
+            <option value="nowShowing">Now Showing</option>
+            <option value="comingSoon">Coming Soon</option>
+          </select>
+
+          {/* Only show release date field when Coming Soon is selected */}
+          {isComingSoon && (
+            <>
+              <label>Expected Release Date</label>
+              <input
+                type="date"
+                className="input-field"
+                value={releaseDate}
+                onChange={(e) => setReleaseDate(e.target.value)}
+              />
+            </>
+          )}
 
           {/* Update and Delete buttons side by side */}
           <div className="edit-btn-row">

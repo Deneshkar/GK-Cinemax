@@ -11,6 +11,7 @@ import MyBookingsPage from './pages/MyBookingsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import EditMoviePage from './pages/EditMoviePage';
 import EditProfilePage from './pages/EditProfilePage'; // imported Edit Profile Component
+import ComingSoonPage from './pages/ComingSoonPage'; // imported Coming Soon Component
 
 // Components
 import Navbar from './components/Navbar';
@@ -34,6 +35,7 @@ function App() {
           <Route path="/profile" element={<EditProfilePage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/movies/:id" element={<EditMoviePage />} />
+          <Route path="/coming-soon" element={<ComingSoonPage />} />
         </Routes>
       </div>
     </BrowserRouter>

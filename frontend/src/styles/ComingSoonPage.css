@@ -1,0 +1,93 @@
+/* Page title */
+.coming-soon-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  border-left: 4px solid #d4a017;
+  padding-left: 12px;
+  color: #ffffff;
+}
+
+/* Subtitle */
+.coming-soon-subtitle {
+  color: #666;
+  font-size: 15px;
+  margin-bottom: 30px;
+  padding-left: 16px;
+}
+
+/* Grid of coming soon cards */
+.coming-soon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+/* Each coming soon card */
+.coming-soon-card {
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.coming-soon-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(212, 160, 23, 0.2);
+}
+
+/* Movie poster */
+.coming-soon-card img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  filter: brightness(0.85);
+}
+
+/* Info section below poster */
+.coming-soon-info {
+  padding: 16px;
+}
+
+/* Movie title */
+.coming-soon-info h3 {
+  font-size: 17px;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+/* Language and duration */
+.coming-soon-info .meta {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+/* The golden "Coming Soon" badge */
+.coming-soon-badge {
+  display: inline-block;
+  background-color: #d4a017;
+  color: #000;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+/* The release date text */
+.release-date {
+  font-size: 13px;
+  color: #d4a017;
+  margin-top: 6px;
+}
+
+/* Empty state */
+.no-coming-soon {
+  text-align: center;
+  padding: 60px;
+  color: #555;
+  font-size: 16px;
+}

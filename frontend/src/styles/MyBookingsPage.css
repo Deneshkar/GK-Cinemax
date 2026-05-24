@@ -1,126 +1,554 @@
-/* The page title */
-.bookings-title {
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 24px;
-  border-left: 4px solid #e50914;
-  padding-left: 12px;
+/* ============================================================
+   GK Cinemax — My Bookings Page
+   Aesthetic: Physical cinema ticket — perforated edge,
+              warm dark surface, gold accents, monospace data
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --ink:          #0A0908;
+  --surface:      #141312;
+  --surface-2:    #1C1A19;
+  --surface-3:    #222120;
+  --border:       rgba(255,255,255,0.07);
+  --border-warm:  rgba(212,170,95,0.25);
+
+  --gold:         #D4AA5F;
+  --gold-pale:    #F0D89A;
+  --gold-dim:     rgba(212,170,95,0.12);
+  --gold-glow:    rgba(212,170,95,0.08);
+
+  --green:        #4ADE80;
+  --green-dim:    rgba(74,222,128,0.10);
+  --amber:        #FBBF24;
+  --amber-dim:    rgba(251,191,36,0.12);
+  --red-soft:     #F87171;
+  --red-dim:      rgba(248,113,113,0.10);
+
+  --text-1:       #F4EFE6;
+  --text-2:       #A89880;
+  --text-3:       #6B5F50;
+
+  --ff-display:   'Playfair Display', Georgia, serif;
+  --ff-body:      'DM Sans', system-ui, sans-serif;
+  --ff-mono:      'DM Mono', monospace;
+  --ease:         cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Each individual booking card */
-.booking-card {
-  background-color: #1a1a1a;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 20px;
-  border: 1px solid #333;
+/* ── Loading ────────────────────────────────────────────── */
+.bookings-loading {
+  min-height: 60vh;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 24px;
-  align-items: flex-start;
+  color: var(--text-3);
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
 }
 
-/* The left section with movie and booking info */
+.bookings-reel {
+  display: flex;
+  gap: 12px;
+}
+
+.reel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: reelPulse 1.2s ease infinite;
+}
+
+.reel-dot:nth-child(2) { animation-delay: 0.2s; }
+.reel-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes reelPulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.75); }
+  50%       { opacity: 1;   transform: scale(1); }
+}
+
+/* ── Error ──────────────────────────────────────────────── */
+.bookings-error {
+  min-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-3);
+  font-family: var(--ff-mono);
+  font-size: 12px;
+}
+
+.bookings-error span { font-size: 24px; opacity: 0.4; }
+
+/* ── Page wrapper ───────────────────────────────────────── */
+.bookings-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 40px 100px;
+  font-family: var(--ff-body);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.bookings-header {
+  margin-bottom: 52px;
+  animation: fadeUp 0.6s var(--ease) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.bookings-eyebrow {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.bookings-title {
+  font-family: var(--ff-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.bookings-count {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.1em;
+}
+
+/* ── Empty state ────────────────────────────────────────── */
+.bookings-empty {
+  text-align: center;
+  padding: 80px 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  opacity: 0.35;
+}
+
+.bookings-empty h3 {
+  font-family: var(--ff-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 8px;
+}
+
+.bookings-empty p {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 28px;
+}
+
+.empty-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 26px;
+  background: var(--gold);
+  color: var(--ink);
+  text-decoration: none;
+  font-family: var(--ff-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  transition: background 0.25s, transform 0.2s;
+}
+
+.empty-cta:hover {
+  background: var(--gold-pale);
+  transform: translateY(-2px);
+}
+
+/* ── Bookings list ──────────────────────────────────────── */
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Booking card — cinema ticket shape ─────────────────── */
+.booking-card {
+  display: flex;
+  align-items: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+
+  opacity: 0;
+  animation: fadeUp 0.6s var(--ease) var(--card-delay, 0s) both;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.booking-card:hover {
+  border-color: var(--border-warm);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 0 transparent;
+}
+
+/* Left gold accent stripe */
+.booking-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--gold), var(--gold-pale), var(--gold));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.booking-card:hover::before {
+  opacity: 1;
+}
+
+/* ── Booking info (left section) ────────────────────────── */
 .booking-info {
   flex: 1;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
 }
 
-/* The movie title in the booking card */
-.booking-movie-title {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: #ffffff;
+/* Top row: title + status badge */
+.booking-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-/* Each detail line in the booking */
-.booking-detail {
-  font-size: 14px;
-  color: #aaaaaa;
-  margin-bottom: 6px;
+.booking-movie {
+  font-family: var(--ff-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.2;
 }
 
-/* The seat tags shown as badges */
-.booking-seats {
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border-radius: 2px;
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-badge.paid     { background: var(--green-dim); color: var(--green);   border: 1px solid rgba(74,222,128,0.2); }
+.status-badge.pending  { background: var(--amber-dim); color: var(--amber);   border: 1px solid rgba(251,191,36,0.2); }
+.status-badge.refunded { background: var(--red-dim);   color: var(--red-soft);border: 1px solid rgba(248,113,113,0.2); }
+.status-badge.rejected { background: var(--red-dim);   color: var(--red-soft);border: 1px solid rgba(248,113,113,0.2); }
+
+/* Meta row: date / time / screen */
+.booking-meta {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 20px;
+}
+
+.meta-item:first-child {
+  padding-left: 0;
+}
+
+.meta-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.meta-label {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.meta-value {
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  color: var(--text-1);
+}
+
+/* Seats row */
+.booking-seats-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.seat-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 12px;
-  margin-bottom: 12px;
 }
 
-/* Each individual seat badge */
-.seat-badge {
-  background-color: #16a34a;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: bold;
+.seat-chip {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gold);
+  background: var(--gold-dim);
+  border: 1px solid var(--border-warm);
+  padding: 3px 10px;
+  border-radius: 2px;
+  letter-spacing: 0.06em;
 }
 
-/* The total price shown in red */
-.booking-total {
-  font-size: 18px;
-  font-weight: bold;
-  color: #e50914;
-  margin-top: 8px;
+/* Footer row: price + cancel button */
+.booking-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
-/* The paid status badge */
-.status-paid {
-  display: inline-block;
-  background-color: #16a34a;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
-  margin-top: 8px;
+.booking-price {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
-/* The right section with the QR code */
+.price-label {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.price-value {
+  font-family: var(--ff-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: -0.02em;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  padding: 8px 18px;
+  border-radius: 3px;
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.25s, border-color 0.25s, background 0.25s;
+}
+
+.cancel-btn:hover {
+  color: var(--red-soft);
+  border-color: rgba(248,113,113,0.3);
+  background: var(--red-dim);
+}
+
+/* ── Perforated divider ─────────────────────────────────── */
+.ticket-perforation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 24px;
+  flex-shrink: 0;
+  background: var(--ink);
+  position: relative;
+}
+
+.perf-notch {
+  width: 20px;
+  height: 12px;
+  background: var(--ink);
+  border-radius: 0 0 50% 50%;
+  position: absolute;
+}
+
+.perf-notch.top    { top: -1px; border-radius: 0 0 50% 50%; }
+.perf-notch.bottom { bottom: -1px; border-radius: 50% 50% 0 0; }
+
+.perf-line {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--border) 0px,
+    var(--border) 5px,
+    transparent 5px,
+    transparent 10px
+  );
+}
+
+/* ── QR section (right) ─────────────────────────────────── */
 .booking-qr {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px 28px 28px 16px;
+  flex-shrink: 0;
 }
 
-/* The QR code image */
-.booking-qr img {
-  width: 140px;
-  height: 140px;
-  border-radius: 8px;
-  background-color: white;
-  padding: 6px;
+.qr-wrap {
+  background: #fff;
+  border-radius: 6px;
+  padding: 8px;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 
-/* The label under the QR code */
-.booking-qr p {
-  font-size: 12px;
-  color: #666;
+.qr-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 3px;
+  display: block;
+}
+
+.qr-label {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
   text-align: center;
 }
 
-/* Shown when the user has no bookings yet */
-.no-bookings {
-  text-align: center;
-  padding: 80px 20px;
-  color: #666;
-}
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .bookings-page {
+    padding: 40px 20px 80px;
+  }
 
-.no-bookings p {
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
-/* On small screens stack info and QR vertically */
-@media (max-width: 600px) {
   .booking-card {
     flex-direction: column;
   }
-  .booking-qr img {
-    width: 100px;
-    height: 100px;
+
+  .ticket-perforation {
+    width: 100%;
+    height: 24px;
+    flex-direction: row;
+    background: var(--ink);
+  }
+
+  .perf-notch.top {
+    top: auto;
+    left: -1px;
+    border-radius: 0 50% 50% 0;
+    width: 12px;
+    height: 20px;
+    position: absolute;
+  }
+
+  .perf-notch.bottom {
+    bottom: auto;
+    right: -1px;
+    border-radius: 50% 0 0 50%;
+    width: 12px;
+    height: 20px;
+    position: absolute;
+  }
+
+  .perf-line {
+    top: 50%;
+    left: 12px;
+    right: 12px;
+    bottom: auto;
+    width: auto;
+    height: 1px;
+    transform: translateY(-50%);
+    background: repeating-linear-gradient(
+      to right,
+      var(--border) 0px,
+      var(--border) 5px,
+      transparent 5px,
+      transparent 10px
+    );
+  }
+
+  .booking-info {
+    padding: 22px 22px 16px;
+  }
+
+  .booking-qr {
+    padding: 16px 22px 22px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 18px;
+  }
+
+  .qr-wrap {
+    width: 90px;
+    height: 90px;
+  }
+
+  .meta-item:first-child { padding-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

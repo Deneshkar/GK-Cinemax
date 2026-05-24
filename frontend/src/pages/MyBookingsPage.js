@@ -4,31 +4,20 @@ import axios from 'axios';
 import { useAuth } from '../AuthContext';
 import '../styles/MyBookingsPage.css';
 
-// The my bookings page shows all past bookings for the logged in user
 function MyBookingsPage() {
 
-  // myBookings holds the list of bookings from the backend
   const [myBookings, setMyBookings] = useState([]);
-
-  // isLoading is true while fetching bookings
-  const [isLoading, setIsLoading] = useState(true);
-
-  // errorMessage holds any error to show the user
+  const [isLoading, setIsLoading]   = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect to login if the user is not logged in
   useEffect(() => {
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
+    if (!currentUser) { navigate('/login'); return; }
     fetchMyBookings();
   }, [currentUser]);
 
-  // Fetches all bookings for the currently logged in user
   async function fetchMyBookings() {
     try {
       const token = localStorage.getItem('gkToken');
@@ -43,134 +32,158 @@ function MyBookingsPage() {
     }
   }
 
-  // Handle cancellation request
   async function handleCancelRequest(bookingId) {
-    if (!window.confirm('Are you sure you want to request a cancellation for this booking? Amount will be refunded upon admin approval.')) return;
+    if (!window.confirm('Request a cancellation? Amount will be refunded upon admin approval.')) return;
     try {
       const token = localStorage.getItem('gkToken');
       await axios.put(`http://localhost:5000/api/bookings/${bookingId}/cancel-request`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Refresh the list after requesting
       fetchMyBookings();
-      alert('Cancellation requested successfully.');
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to request cancellation.');
     }
   }
 
-  // Formats a date string like "2024-06-20" to "Thu, 20 Jun 2024"
   function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
     });
   }
 
   if (isLoading) {
-    return <div className="loading">Loading your bookings...</div>;
+    return (
+      <div className="bookings-loading">
+        <div className="bookings-reel">
+          <div className="reel-dot"></div>
+          <div className="reel-dot"></div>
+          <div className="reel-dot"></div>
+        </div>
+        <p>Loading your bookings…</p>
+      </div>
+    );
   }
 
   if (errorMessage) {
-    return <div className="error">{errorMessage}</div>;
+    return (
+      <div className="bookings-error">
+        <span>⚠</span>
+        <p>{errorMessage}</p>
+      </div>
+    );
   }
 
   return (
-    <div>
+    <div className="bookings-page">
 
-      {/* Page title */}
-      <h2 className="bookings-title">My Bookings</h2>
+      {/* Header */}
+      <div className="bookings-header">
+        <p className="bookings-eyebrow">Your Account</p>
+        <h1 className="bookings-title">My Bookings</h1>
+        {myBookings.length > 0 && (
+          <p className="bookings-count">{myBookings.length} reservation{myBookings.length !== 1 ? 's' : ''}</p>
+        )}
+      </div>
 
-      {/* Show message if user has no bookings yet */}
+      {/* Empty state */}
       {myBookings.length === 0 && (
-        <div className="no-bookings">
-          <p>You have no bookings yet.</p>
-          <Link to="/" className="btn-primary">Browse Movies</Link>
+        <div className="bookings-empty">
+          <div className="empty-icon">🎬</div>
+          <h3>No bookings yet</h3>
+          <p>Your reserved seats will appear here.</p>
+          <Link to="/" className="empty-cta">Browse Now Showing</Link>
         </div>
       )}
 
-      {/* List of booking cards */}
-      {myBookings.map((booking) => (
-        <div key={booking._id} className="booking-card">
+      {/* Cards */}
+      <div className="bookings-list">
+        {myBookings.map((booking, index) => {
+          const cs = booking.cancelStatus;
+          const ps = booking.paymentStatus;
 
-          {/* Left side — booking details */}
-          <div className="booking-info">
+          return (
+            <article
+              key={booking._id}
+              className="booking-card"
+              style={{ '--card-delay': `${index * 0.07}s` }}
+            >
+              {/* Left: details */}
+              <div className="booking-info">
 
-            {/* Movie title */}
-            <div className="booking-movie-title">
-              🎬 {booking.showtimeId?.movieId?.title || 'Movie'}
-            </div>
+                <div className="booking-card-top">
+                  <h2 className="booking-movie">
+                    {booking.showtimeId?.movieId?.title || 'Untitled Film'}
+                  </h2>
+                  {/* Status badge */}
+                  {ps === 'paid' && cs === 'none'   && <span className="status-badge paid">Confirmed</span>}
+                  {cs === 'requested'               && <span className="status-badge pending">Cancel Pending</span>}
+                  {cs === 'refunded'                && <span className="status-badge refunded">Refunded</span>}
+                  {cs === 'rejected'                && <span className="status-badge rejected">Req. Rejected</span>}
+                </div>
 
-            {/* Date */}
-            <div className="booking-detail">
-              📅 {formatDate(booking.showtimeId?.date)}
-            </div>
+                <div className="booking-meta">
+                  <div className="meta-item">
+                    <span className="meta-label">Date</span>
+                    <span className="meta-value">{formatDate(booking.showtimeId?.date)}</span>
+                  </div>
+                  <div className="meta-divider" aria-hidden="true"></div>
+                  <div className="meta-item">
+                    <span className="meta-label">Time</span>
+                    <span className="meta-value">{booking.showtimeId?.time}</span>
+                  </div>
+                  <div className="meta-divider" aria-hidden="true"></div>
+                  <div className="meta-item">
+                    <span className="meta-label">Screen</span>
+                    <span className="meta-value">S{booking.showtimeId?.screen}</span>
+                  </div>
+                </div>
 
-            {/* Time */}
-            <div className="booking-detail">
-              🕐 {booking.showtimeId?.time}
-            </div>
+                <div className="booking-seats-row">
+                  <span className="meta-label">Seats</span>
+                  <div className="seat-chips">
+                    {booking.seats.map((seat) => (
+                      <span key={seat} className="seat-chip">{seat}</span>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Screen */}
-            <div className="booking-detail">
-              🎭 Screen {booking.showtimeId?.screen}
-            </div>
+                <div className="booking-footer">
+                  <div className="booking-price">
+                    <span className="price-label">Total</span>
+                    <span className="price-value">LKR {booking.totalPrice.toLocaleString()}</span>
+                  </div>
 
-            {/* Seat badges */}
-            <div className="booking-seats">
-              {booking.seats.map((seat) => (
-                <span key={seat} className="seat-badge">{seat}</span>
-              ))}
-            </div>
+                  {cs === 'none' && ps === 'paid' && (
+                    <button
+                      className="cancel-btn"
+                      onClick={() => handleCancelRequest(booking._id)}
+                    >
+                      Request Cancellation
+                    </button>
+                  )}
+                </div>
 
-            {/* Total price */}
-            <div className="booking-total">
-              LKR {booking.totalPrice}
-            </div>
-
-            {/* Status and Action Buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div>
-                {booking.paymentStatus === 'paid' && booking.cancelStatus === 'none' && (
-                  <span className="status-paid">✓ Paid</span>
-                )}
-                {booking.cancelStatus === 'requested' && (
-                  <span style={{ color: '#eab308', fontWeight: 'bold' }}>⏳ Cancellation Requested</span>
-                )}
-                {booking.cancelStatus === 'refunded' && (
-                  <span style={{ color: '#ef4444', fontWeight: 'bold' }}>✓ Cancelled & Refunded</span>
-                )}
-                {booking.cancelStatus === 'rejected' && (
-                  <span style={{ color: '#ef4444', fontWeight: 'bold' }}>❌ Cancel Request Rejected</span>
-                )}
               </div>
-              
-              {booking.cancelStatus === 'none' && booking.paymentStatus === 'paid' && (
-                <button 
-                  onClick={() => handleCancelRequest(booking._id)}
-                  style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                  Cancel Booking
-                </button>
-              )}
-            </div>
 
-          </div>
+              {/* Perforated divider */}
+              <div className="ticket-perforation" aria-hidden="true">
+                <div className="perf-notch top"></div>
+                <div className="perf-line"></div>
+                <div className="perf-notch bottom"></div>
+              </div>
 
-          {/* Right side — QR code */}
-          <div className="booking-qr">
-            <img
-              src={booking.qrCode}
-              alt="Booking QR Code"
-            />
-            <p>Show at entrance</p>
-          </div>
+              {/* Right: QR */}
+              <div className="booking-qr">
+                <div className="qr-wrap">
+                  <img src={booking.qrCode} alt="Booking QR Code" />
+                </div>
+                <p className="qr-label">Show at entrance</p>
+              </div>
 
-        </div>
-      ))}
+            </article>
+          );
+        })}
+      </div>
 
     </div>
   );

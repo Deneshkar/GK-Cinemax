@@ -8,16 +8,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Returns all movies that are currently showing
-async function getAllMovies(req, res) {
-  try {
-    const movieList = await Movie.find({ isShowing: true });
-    res.json(movieList);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}
-
 // Returns one movie by its id
 async function getOneMovie(req, res) {
   try {
@@ -38,7 +28,7 @@ async function getOneMovie(req, res) {
 // The poster image is uploaded to Cloudinary first
 async function addMovie(req, res) {
   try {
-    const { title, language, duration, description } = req.body;
+    const { title, language, duration, description, comingSoon, releaseDate } = req.body;
 
     // Upload the poster image file to Cloudinary
     const uploadResult = await cloudinary.uploader.upload(req.file.path, {
@@ -51,6 +41,9 @@ async function addMovie(req, res) {
       language,
       duration,
       description,
+      comingSoon: comingSoon === 'true',
+      isShowing: comingSoon !== 'true',
+      releaseDate,
       posterUrl: uploadResult.secure_url
     });
 
@@ -68,7 +61,7 @@ async function addMovie(req, res) {
 // If a new poster is uploaded it replaces the old one in Cloudinary
 async function updateMovie(req, res) {
   try {
-    const { title, language, duration, description, isShowing } = req.body;
+    const { title, language, duration, description, isShowing, comingSoon, releaseDate } = req.body;
 
     // Build the update object with the new values
     const updateData = {
@@ -76,7 +69,9 @@ async function updateMovie(req, res) {
       language,
       duration,
       description,
-      isShowing
+      isShowing: isShowing === 'true',
+      comingSoon: comingSoon === 'true',
+      releaseDate
     };
 
     // If a new poster file was uploaded, upload it to Cloudinary
@@ -137,8 +132,27 @@ async function deleteMovie(req, res) {
   }
 }
 
+async function getAllMovies(req, res) {
+  try{
+    const movieList = await Movie.find({isShowing:true, comingSoon: { $ne: true }});
+    res.json(movieList);
+  } catch(error){
+    res.status(500).json({message: error.message});
+  }
+}
+
+async function getComingSoonMovies(req, res){
+  try{
+    const movieList = await Movie.find({comingSoon:true});
+    res.json(movieList);
+  } catch(error){
+    res.status(500).json({message: error.message});
+  }
+}
+
 module.exports = {
   getAllMovies,
+  getComingSoonMovies,
   getOneMovie,
   addMovie,
   updateMovie,

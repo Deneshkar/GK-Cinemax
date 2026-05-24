@@ -37,6 +37,16 @@ const movieSchema = new mongoose.Schema({
   isShowing: {
     type: Boolean,
     default: true
+  },
+
+  comingSoon:{
+    type: Boolean,
+    default: false
+  },
+
+  releaseDate: {
+    type: String,
+    default: ''
   }
 
 }, { timestamps: true });

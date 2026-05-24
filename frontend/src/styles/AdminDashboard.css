@@ -1,215 +1,809 @@
-/* Admin page wrapper for glow effects */
+/* ============================================================
+   GK Cinemax — Admin Dashboard
+   Aesthetic: Dark Command Center — authoritative, precise,
+              warm gold accents, monospace data, film-noir grid
+   Tokens mirror HomePage.css for full design cohesion.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+
+/* ============================================================
+   1. Tokens (mirrors HomePage)
+   ============================================================ */
+:root {
+  --ink:           #0A0908;
+  --ink-alt:       #0E0D0C;
+  --surface:       #141312;
+  --surface-2:     #1C1A19;
+  --surface-3:     #222120;
+  --border:        rgba(255,255,255,0.07);
+  --border-warm:   rgba(212,170,95,0.25);
+  --border-hover:  rgba(255,255,255,0.12);
+
+  --gold:          #D4AA5F;
+  --gold-pale:     #F0D89A;
+  --gold-dim:      rgba(212,170,95,0.12);
+  --gold-glow:     rgba(212,170,95,0.08);
+
+  --green:         #4ADE80;
+  --green-dim:     rgba(74,222,128,0.1);
+  --red-soft:      #F87171;
+  --red-dim:       rgba(248,113,113,0.1);
+  --amber:         #FBBF24;
+  --amber-dim:     rgba(251,191,36,0.12);
+  --blue-soft:     #60A5FA;
+  --blue-dim:      rgba(96,165,250,0.1);
+
+  --text-1:        #F4EFE6;
+  --text-2:        #A89880;
+  --text-3:        #6B5F50;
+
+  --ff-display:    'Playfair Display', Georgia, serif;
+  --ff-body:       'DM Sans', system-ui, sans-serif;
+  --ff-mono:       'DM Mono', 'Fira Code', monospace;
+
+  --ease:          cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-spring:   cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  --radius-sm:     4px;
+  --radius-md:     8px;
+  --radius-lg:     12px;
+}
+
+/* ============================================================
+   2. Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ============================================================
+   3. Page Container
+   ============================================================ */
 .admin-page-container {
-  padding: 20px 0;
+  min-height: 100vh;
+  background: var(--ink);
+  color: var(--text-1);
+  font-family: var(--ff-body);
+  -webkit-font-smoothing: antialiased;
+  padding: 0 0 80px 0;
   position: relative;
 }
 
-/* Page title */
-.admin-title {
-  font-size: 32px;
-  font-weight: 900;
-  margin-bottom: 24px;
-  display: inline-block;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+/* Subtle top-of-page rule — like a control panel header bar */
+.admin-page-container::before {
+  content: '';
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 30%, var(--gold-pale) 50%, var(--gold) 70%, transparent 100%);
+  opacity: 0.6;
 }
 
-.admin-title .logo-gk { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
-.admin-title .logo-cine { color: #E31837; margin-left: 6px; margin-right: 6px; text-shadow: 0 0 10px rgba(227, 24, 55, 0.4); }
-.admin-title .logo-max { color: #1976D2; text-shadow: 0 0 10px rgba(25, 118, 210, 0.4); }
+/* ============================================================
+   4. Header / Title Bar
+   ============================================================ */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 48px 0;
+  margin-bottom: 36px;
+  animation: slideDown 0.6s var(--ease) both;
+}
 
-/* The tab buttons row */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.admin-title {
+  font-size: 0;  /* reset — we use child spans for sizing */
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.admin-title-main {
+  font-family: var(--ff-display);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+
+.admin-title-main .logo-gk {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.admin-title-badge {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--border-warm);
+  padding: 3px 10px;
+  border-radius: 2px;
+  background: var(--gold-dim);
+  align-self: center;
+}
+
+/* ============================================================
+   5. Tab Bar
+   ============================================================ */
 .admin-tabs {
   display: flex;
-  gap: 16px;
-  margin-bottom: 30px;
-  border-bottom: 2px solid #222;
-  padding-bottom: 12px;
+  gap: 0;
+  margin: 0 48px 40px;
+  border-bottom: 1px solid var(--border);
+  animation: slideDown 0.6s var(--ease) 0.1s both;
 }
 
-/* Each tab button */
 .tab-btn {
+  position: relative;
   background: none;
   border: none;
-  color: #888;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 10px 24px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-  font-weight: bold;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-3);
+  font-family: var(--ff-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  position: relative;
+  cursor: pointer;
+  padding: 14px 28px;
+  transition: color 0.25s var(--ease), border-color 0.25s var(--ease);
+  white-space: nowrap;
 }
 
 .tab-btn:hover {
-  color: #fff;
-  background-color: rgba(255, 215, 0, 0.1);
+  color: var(--text-1);
 }
 
-/* The active tab — highlighted in yellow */
 .tab-btn.active {
-  background-color: #FFD700;
-  color: #000;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  color: var(--gold);
+  border-bottom-color: var(--gold);
 }
 
-/* The form card for adding movies and showtimes */
-.admin-form-card {
-  background-color: #0b0b0b;
-  border-radius: 16px;
-  padding: 40px;
-  max-width: 600px;
-  border: 1px solid rgba(25, 118, 210, 0.3); /* Blue accent border */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(25, 118, 210, 0.1);
-  animation: fadeIn 0.4s ease-out;
+.tab-btn .tab-icon {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 14px;
+  vertical-align: -2px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ============================================================
+   6. Tab Content Wrapper
+   ============================================================ */
+.admin-tab-content {
+  padding: 0 48px;
+  animation: fadeUp 0.4s var(--ease) both;
 }
 
-/* Each form field label */
-.admin-form-card label {
-  display: block;
-  font-size: 13px;
-  color: #ccc;
-  margin-bottom: 8px;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   7. Section Label (reused across tabs)
+   ============================================================ */
+.admin-section-label {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 1px;
+  color: var(--gold);
+  margin-bottom: 8px;
 }
 
-/* The form title */
+/* ============================================================
+   8. Form Card
+   ============================================================ */
+.admin-form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  max-width: 580px;
+  transition: border-color 0.3s;
+  animation: fadeUp 0.5s var(--ease) both;
+}
+
+.admin-form-card:focus-within {
+  border-color: var(--border-warm);
+}
+
 .admin-form-card h3 {
-  font-size: 24px;
-  margin-bottom: 30px;
-  color: #ffffff;
-  border-left: 4px solid #1976D2; /* Blue left accent */
-  padding-left: 12px;
+  font-family: var(--ff-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 6px;
 }
 
-/* File input for poster upload */
+.admin-form-card .form-subtitle {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 32px;
+  font-family: var(--ff-mono);
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   9. Form Fields
+   ============================================================ */
+.admin-form-card label,
+.field-label {
+  display: block;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 8px;
+}
+
+.input-field {
+  width: 100%;
+  background: var(--ink-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  font-family: var(--ff-body);
+  font-size: 14px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  outline: none;
+  transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input-field::placeholder {
+  color: var(--text-3);
+}
+
+.input-field:hover {
+  border-color: var(--border-hover);
+}
+
+.input-field:focus {
+  border-color: var(--gold);
+  background: #100F0E;
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+
+/* Select */
+select.input-field {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B5F50' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+select.input-field option {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+/* Textarea */
+textarea.input-field {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+/* File input */
 .file-input {
   width: 100%;
-  padding: 12px;
-  background-color: #151515;
-  border: 1px dashed #1976D2; /* Blue dashed outline */
-  border-radius: 8px;
-  color: #aaa;
-  font-size: 14px;
-  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: var(--ink-alt);
+  border: 1px dashed var(--border-warm);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-family: var(--ff-body);
+  font-size: 13px;
+  margin-bottom: 24px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color 0.25s, background 0.25s, color 0.25s;
 }
 
 .file-input:hover {
-  background-color: rgba(25, 118, 210, 0.05);
-  border-color: #FFD700;
-  color: #fff;
+  border-color: var(--gold);
+  background: var(--gold-glow);
+  color: var(--text-1);
 }
 
-/* Success message shown after form submit */
-.success-message {
-  background-color: rgba(74, 222, 128, 0.1);
-  border: 1px solid #16a34a;
-  color: #4ade80;
-  padding: 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-bottom: 20px;
-  text-align: center;
-  font-weight: bold;
+/* Screen checkboxes */
+.screen-checks {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-/* Error message shown if form fails */
-.admin-error {
-  background-color: rgba(227, 24, 55, 0.1);
-  border: 1px solid #E31837;
-  color: #ff6b6b;
-  padding: 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-bottom: 20px;
-  text-align: center;
-  font-weight: bold;
-  animation: shake 0.4s ease-in-out;
+.screen-check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--ff-body);
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.25s, background 0.25s, color 0.25s;
+  user-select: none;
 }
 
-/* The bookings table wrapper */
-.bookings-table-wrapper {
-  overflow-x: auto;
-  border-radius: 12px;
-  background-color: #0b0b0b;
-  border: 1px solid #222;
+.screen-check-label:hover {
+  border-color: var(--border-warm);
+  color: var(--text-1);
 }
 
-/* The bookings table */
-.bookings-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 15px;
+.screen-check-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--gold);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-/* Table header row */
-.bookings-table th {
-  background-color: #151515;
-  color: #FFD700; /* Yellow headers */
-  padding: 16px;
-  text-align: left;
-  font-weight: 800;
+.screen-check-label.is-checked {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold);
+}
+
+/* ============================================================
+   10. Buttons
+   ============================================================ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px 28px;
+  font-family: var(--ff-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 2px solid #333;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
 }
 
-/* Table data cells */
-.bookings-table td {
-  padding: 16px;
-  border-bottom: 1px solid #1a1a1a;
-  color: #eee;
-  vertical-align: top;
+.btn-primary:hover:not(:disabled) {
+  background: var(--gold-pale);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(212,170,95,0.25);
 }
 
-/* Alternate row shading */
-.bookings-table tr:nth-child(even) td {
-  background-color: #111;
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
-.bookings-table tr:hover td {
-  background-color: rgba(25, 118, 210, 0.1); /* Blue hover effect */
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
-/* The revenue summary card */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  font-family: var(--ff-body);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.25s, color 0.25s, background 0.25s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--border-hover);
+  color: var(--text-1);
+  background: var(--surface-2);
+}
+
+/* Inline action buttons (table) */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.action-btn:active { transform: translateY(0); }
+
+.action-btn.edit   { background: var(--amber-dim); color: var(--amber);  border: 1px solid rgba(251,191,36,0.25); }
+.action-btn.delete { background: var(--red-dim);   color: var(--red-soft); border: 1px solid rgba(248,113,113,0.2); }
+.action-btn.approve { background: var(--green-dim); color: var(--green);  border: 1px solid rgba(74,222,128,0.2); }
+.action-btn.reject  { background: var(--red-dim);   color: var(--red-soft); border: 1px solid rgba(248,113,113,0.2); }
+
+/* ============================================================
+   11. Feedback Messages
+   ============================================================ */
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--green-dim);
+  border: 1px solid rgba(74,222,128,0.25);
+  color: var(--green);
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: 24px;
+  font-family: var(--ff-mono);
+  letter-spacing: 0.04em;
+  animation: fadeUp 0.3s var(--ease);
+}
+
+.success-message::before { content: '✓'; font-weight: 700; }
+
+.admin-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--red-dim);
+  border: 1px solid rgba(248,113,113,0.2);
+  color: var(--red-soft);
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: 24px;
+  font-family: var(--ff-mono);
+  letter-spacing: 0.04em;
+  animation: shake 0.4s ease;
+}
+
+.admin-error::before { content: '!'; font-weight: 700; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  60%       { transform: translateX(6px); }
+}
+
+/* ============================================================
+   12. Revenue / Stat Cards
+   ============================================================ */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gold);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.stat-card:hover {
+  border-color: var(--border-warm);
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-label {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+
+.stat-value {
+  font-family: var(--ff-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.stat-sub {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 6px;
+  font-family: var(--ff-mono);
+}
+
+/* Legacy revenue-card kept for compatibility */
 .revenue-card {
-  background: linear-gradient(-45deg, #0a0a0a, #112240, #0a0a0a);
-  border: 1px solid rgba(255, 215, 0, 0.3); /* Yellow border */
-  border-radius: 16px;
-  padding: 24px 32px;
-  margin-bottom: 30px;
+  background: var(--surface);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-lg);
+  padding: 28px 36px;
+  margin-bottom: 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.revenue-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 
 .revenue-card h3 {
-  font-size: 16px;
-  color: #aaa;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.revenue-card p {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--ff-mono);
 }
 
 .revenue-amount {
-  font-size: 32px;
-  font-weight: bold;
-  color: #e50914;
+  font-family: var(--ff-display);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: -0.02em;
 }
 
-/* Shown when there are no bookings yet */
-.no-bookings-admin {
+/* ============================================================
+   13. Tables
+   ============================================================ */
+.bookings-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.bookings-table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.bookings-table th {
+  padding: 14px 20px;
+  text-align: left;
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+  background: var(--surface-2);
+}
+
+.bookings-table th:first-child { border-radius: var(--radius-lg) 0 0 0; }
+.bookings-table th:last-child  { border-radius: 0 var(--radius-lg) 0 0; }
+
+.bookings-table td {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-1);
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+.bookings-table tr:last-child td {
+  border-bottom: none;
+}
+
+.bookings-table tbody tr {
+  transition: background 0.2s;
+}
+
+.bookings-table tbody tr:hover td {
+  background: var(--surface-2);
+}
+
+.table-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--ff-mono);
+  margin-top: 3px;
+}
+
+.table-price {
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+/* ============================================================
+   14. Status Badges
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.badge::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge.paid     { background: var(--green-dim); color: var(--green);   border: 1px solid rgba(74,222,128,0.2); }
+.badge.requested{ background: var(--amber-dim); color: var(--amber);   border: 1px solid rgba(251,191,36,0.2); }
+.badge.refunded { background: var(--red-dim);   color: var(--red-soft);border: 1px solid rgba(248,113,113,0.2); }
+.badge.rejected { background: var(--red-dim);   color: var(--red-soft);border: 1px solid rgba(248,113,113,0.2); }
+
+/* ============================================================
+   15. Showtime Form + Table Side-by-Side Layout
+   ============================================================ */
+.showtime-layout {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.showtime-table-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.showtime-table-panel-header {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.showtime-table-panel-header h3 {
+  font-family: var(--ff-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.showtime-count {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.12em;
+}
+
+/* ============================================================
+   16. Empty / Loading / Error States
+   ============================================================ */
+.loading, .error {
+  padding: 60px;
   text-align: center;
-  padding: 40px;
-  color: #666;
-  font-size: 16px;
+  color: var(--text-3);
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+
+.no-bookings-admin {
+  padding: 60px;
+  text-align: center;
+  color: var(--text-3);
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.empty-table-row td {
+  padding: 40px !important;
+  text-align: center;
+  color: var(--text-3);
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+/* ============================================================
+   17. Button Row Utilities
+   ============================================================ */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ============================================================
+   18. Responsive
+   ============================================================ */
+@media (max-width: 1100px) {
+  .showtime-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-form-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-header { padding: 24px 24px 0; }
+  .admin-tabs   { margin: 0 24px 32px; }
+  .admin-tab-content { padding: 0 24px; }
+  .tab-btn { padding: 12px 16px; font-size: 11px; }
+
+  .revenue-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .stats-row { grid-template-columns: 1fr 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

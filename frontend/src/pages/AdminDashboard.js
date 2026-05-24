@@ -20,40 +20,45 @@ function AdminDashboard() {
     }
   }, [currentUser]);
 
+  const tabs = [
+    { id: 'addMovie',    label: 'Add Movie',    icon: '＋' },
+    { id: 'addShowtime', label: 'Showtimes',    icon: '◷' },
+    { id: 'allBookings', label: 'All Bookings', icon: '≡'  },
+  ];
+
   return (
     <div className="admin-page-container">
-      <h2 className="admin-title">
-        <span className="logo-gk">GK</span> 
-        <span className="logo-cine">Admin</span> 
-        <span className="logo-max">Dashboard</span>
-      </h2>
+
+      {/* Header */}
+      <div className="admin-header">
+        <h2 className="admin-title">
+          <span className="admin-title-main">
+            <span className="logo-gk">GK</span> Cinemax
+          </span>
+          <span className="admin-title-badge">Control Panel</span>
+        </h2>
+      </div>
 
       {/* Tab buttons */}
       <div className="admin-tabs">
-        <button
-          className={activeTab === 'addMovie' ? 'tab-btn active' : 'tab-btn'}
-          onClick={() => setActiveTab('addMovie')}
-        >
-          Add Movie
-        </button>
-        <button
-          className={activeTab === 'addShowtime' ? 'tab-btn active' : 'tab-btn'}
-          onClick={() => setActiveTab('addShowtime')}
-        >
-          Add Showtime
-        </button>
-        <button
-          className={activeTab === 'allBookings' ? 'tab-btn active' : 'tab-btn'}
-          onClick={() => setActiveTab('allBookings')}
-        >
-          All Bookings
-        </button>
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            <span className="tab-icon" aria-hidden="true">{tab.icon}</span>
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Show the correct section based on active tab */}
-      {activeTab === 'addMovie'    && <AddMovieForm />}
-      {activeTab === 'addShowtime' && <AddShowtimeForm />}
-      {activeTab === 'allBookings' && <AllBookingsTable />}
+      {/* Tab content */}
+      <div className="admin-tab-content" key={activeTab}>
+        {activeTab === 'addMovie'    && <AddMovieForm />}
+        {activeTab === 'addShowtime' && <AddShowtimeForm />}
+        {activeTab === 'allBookings' && <AllBookingsTable />}
+      </div>
 
     </div>
   );
@@ -63,27 +68,29 @@ function AdminDashboard() {
 // ADD MOVIE FORM
 // ─────────────────────────────────────────
 
-// Form that lets the admin add a new movie with a poster image
 function AddMovieForm() {
 
-  // Form field values
-  const [movieTitle, setMovieTitle]           = useState('');
-  const [movieLanguage, setMovieLanguage]     = useState('');
-  const [movieDuration, setMovieDuration]     = useState('');
+  const [movieTitle, setMovieTitle]             = useState('');
+  const [movieLanguage, setMovieLanguage]       = useState('');
+  const [movieDuration, setMovieDuration]       = useState('');
   const [movieDescription, setMovieDescription] = useState('');
-  const [posterFile, setPosterFile]           = useState(null);
+  const [posterFile, setPosterFile]             = useState(null);
+  const [posterFileName, setPosterFileName]     = useState('');
+
+  // NEW
+  const [isComingSoon, setIsComingSoon] = useState(false);
+  const [releaseDate, setReleaseDate]   = useState('');
 
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage]     = useState('');
   const [isSubmitting, setIsSubmitting]     = useState(false);
 
-  // Handles the add movie form submission
   async function handleAddMovie(event) {
     event.preventDefault();
+
     setSuccessMessage('');
     setErrorMessage('');
 
-    // Make sure a poster image was selected
     if (!posterFile) {
       setErrorMessage('Please select a poster image.');
       return;
@@ -94,101 +101,217 @@ function AddMovieForm() {
     try {
       const token = localStorage.getItem('gkToken');
 
-      // Use FormData because we are sending a file along with text fields
       const formData = new FormData();
-      formData.append('title',       movieTitle);
-      formData.append('language',    movieLanguage);
-      formData.append('duration',    movieDuration);
+
+      formData.append('title', movieTitle);
+      formData.append('language', movieLanguage);
+      formData.append('duration', movieDuration);
       formData.append('description', movieDescription);
-      formData.append('poster',      posterFile);
+      formData.append('poster', posterFile);
 
-      await axios.post('http://localhost:5000/api/movies', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+      // NEW
+      formData.append('comingSoon', isComingSoon);
+      formData.append('releaseDate', releaseDate);
+
+      await axios.post(
+        'http://localhost:5000/api/movies',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          }
         }
-      });
+      );
 
-      setSuccessMessage(`"${movieTitle}" added successfully!`);
+      setSuccessMessage(
+        `"${movieTitle}" has been added to the lineup.`
+      );
 
-      // Clear all form fields after success
+      // reset fields
       setMovieTitle('');
       setMovieLanguage('');
       setMovieDuration('');
       setMovieDescription('');
+
       setPosterFile(null);
+      setPosterFileName('');
+
+      setIsComingSoon(false);
+      setReleaseDate('');
 
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || 'Failed to add movie.');
+
+      setErrorMessage(
+        error.response?.data?.message ||
+        'Failed to add movie.'
+      );
+
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  function handleFileChange(e) {
+    const file = e.target.files[0];
+
+    if (file) {
+      setPosterFile(file);
+      setPosterFileName(file.name);
+    }
+  }
+
   return (
     <div className="admin-form-card">
-      <h3>Add New Movie</h3>
+      <div className="admin-section-label">
+        New Entry
+      </div>
 
-      {successMessage && <div className="success-message">{successMessage}</div>}
-      {errorMessage   && <div className="admin-error">{errorMessage}</div>}
+      <h3>Add Movie</h3>
+
+      <p className="form-subtitle">
+        Fill in the details to add a film to the schedule.
+      </p>
+
+      {successMessage && (
+        <div className="success-message">
+          {successMessage}
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="admin-error">
+          {errorMessage}
+        </div>
+      )}
 
       <form onSubmit={handleAddMovie}>
 
         <label>Movie Title</label>
+
         <input
           type="text"
           className="input-field"
           placeholder="e.g. Vettaiyan"
           value={movieTitle}
-          onChange={(e) => setMovieTitle(e.target.value)}
+          onChange={(e)=>setMovieTitle(e.target.value)}
           required
         />
 
         <label>Language</label>
+
         <input
           type="text"
           className="input-field"
-          placeholder="e.g. Tamil, Sinhala, English"
+          placeholder="Tamil / Sinhala / English"
           value={movieLanguage}
-          onChange={(e) => setMovieLanguage(e.target.value)}
+          onChange={(e)=>setMovieLanguage(e.target.value)}
           required
         />
 
         <label>Duration (minutes)</label>
+
         <input
           type="number"
           className="input-field"
-          placeholder="e.g. 150"
+          placeholder="150"
           value={movieDuration}
-          onChange={(e) => setMovieDuration(e.target.value)}
+          onChange={(e)=>setMovieDuration(e.target.value)}
           required
         />
 
         <label>Description</label>
+
         <textarea
           className="input-field"
-          placeholder="Short description of the movie..."
-          value={movieDescription}
-          onChange={(e) => setMovieDescription(e.target.value)}
           rows={4}
+          placeholder="Movie description..."
+          value={movieDescription}
+          onChange={(e)=>setMovieDescription(e.target.value)}
           required
         />
 
         <label>Poster Image</label>
+
         <input
           type="file"
-          className="file-input"
+          id="posterFileInput"
           accept="image/*"
-          onChange={(e) => setPosterFile(e.target.files[0])}
+          onChange={handleFileChange}
+          style={{display:'none'}}
         />
+
+        <label
+          htmlFor="posterFileInput"
+          className="file-input"
+          style={{
+            cursor:'pointer',
+            display:'block',
+            textAlign:'center'
+          }}
+        >
+          {posterFileName
+            ? `✓ ${posterFileName}`
+            : '↑ Click to upload poster'}
+        </label>
+
+        {/* NEW */}
+
+        <label>Movie Status</label>
+
+        <select
+          className="input-field"
+          value={
+            isComingSoon
+              ? 'comingSoon'
+              : 'nowShowing'
+          }
+          onChange={(e)=>
+            setIsComingSoon(
+              e.target.value === 'comingSoon'
+            )
+          }
+        >
+          <option value="nowShowing">
+            Now Showing
+          </option>
+
+          <option value="comingSoon">
+            Coming Soon
+          </option>
+        </select>
+
+        {isComingSoon && (
+          <>
+            <label>
+              Expected Release Date
+            </label>
+
+            <input
+              type="date"
+              className="input-field"
+              value={releaseDate}
+              onChange={(e)=>
+                setReleaseDate(
+                  e.target.value
+                )
+              }
+            />
+          </>
+        )}
 
         <button
           type="submit"
           className="btn-primary"
-          style={{ width: '100%' }}
+          style={{
+            width:'100%',
+            marginTop:'8px'
+          }}
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Uploading...' : 'Add Movie'}
+          {isSubmitting
+            ? 'Uploading...'
+            : 'Add to Lineup'}
         </button>
 
       </form>
@@ -200,14 +323,11 @@ function AddMovieForm() {
 // ADD SHOWTIME FORM
 // ─────────────────────────────────────────
 
-// Form that lets the admin add a showtime for an existing movie
 function AddShowtimeForm() {
 
-  // movieList holds all movies to populate the dropdown
   const [movieList, setMovieList]             = useState([]);
   const [allShowtimes, setAllShowtimes]       = useState([]);
-  
-  // State for Add/Edit
+
   const [selectedMovieId, setSelectedMovieId] = useState('');
   const [selectedScreens, setSelectedScreens] = useState(['1']);
   const [showDate, setShowDate]               = useState('');
@@ -219,13 +339,11 @@ function AddShowtimeForm() {
   const [errorMessage, setErrorMessage]     = useState('');
   const [isSubmitting, setIsSubmitting]     = useState(false);
 
-  // Fetch all movies and showtimes when this form loads
   useEffect(() => {
     fetchMovies();
     fetchAllShowtimes();
   }, []);
 
-  // Fetches all movies to populate the movie dropdown
   async function fetchMovies() {
     try {
       const response = await axios.get('http://localhost:5000/api/movies');
@@ -235,7 +353,6 @@ function AddShowtimeForm() {
     }
   }
 
-  // Fetches all showtimes to list them below
   async function fetchAllShowtimes() {
     try {
       const response = await axios.get('http://localhost:5000/api/showtimes');
@@ -245,13 +362,11 @@ function AddShowtimeForm() {
     }
   }
 
-  // Handle edit button click
   function handleEditClick(showtime) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setEditingShowtimeId(showtime._id);
-    // showtime.movieId could be an object if populated, so grab _id
     setSelectedMovieId(showtime.movieId?._id || showtime.movieId);
-    setSelectedScreens([String(showtime.screen)]); // edit single screen
+    setSelectedScreens([String(showtime.screen)]);
     setShowDate(showtime.date);
     setShowTime(showtime.time);
     setTicketPrice(String(showtime.price));
@@ -259,26 +374,21 @@ function AddShowtimeForm() {
     setErrorMessage('');
   }
 
-  // Handle delete button click
   async function handleDeleteShowtime(id) {
-    if (!window.confirm('Are you sure you want to delete this showtime?')) return;
-    
+    if (!window.confirm('Delete this showtime?')) return;
     try {
       const token = localStorage.getItem('gkToken');
       await axios.delete(`http://localhost:5000/api/showtimes/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAllShowtimes(allShowtimes.filter((s) => s._id !== id));
-      setSuccessMessage('Showtime deleted successfully!');
-      
+      setSuccessMessage('Showtime removed.');
       if (editingShowtimeId === id) resetForm();
-
     } catch (error) {
       setErrorMessage(error.response?.data?.message || 'Failed to delete showtime.');
     }
   }
 
-  // Reset form
   function resetForm() {
     setEditingShowtimeId(null);
     setSelectedMovieId('');
@@ -288,7 +398,6 @@ function AddShowtimeForm() {
     setTicketPrice('600');
   }
 
-  // Handles the add/edit showtime form submission
   async function handleAddOrUpdateShowtime(event) {
     event.preventDefault();
     setSuccessMessage('');
@@ -305,21 +414,19 @@ function AddShowtimeForm() {
       const token = localStorage.getItem('gkToken');
 
       if (editingShowtimeId) {
-        // Update existing showtime (single screen based on checkboxes, use first selection)
         await axios.put(
           `http://localhost:5000/api/showtimes/${editingShowtimeId}`,
           {
             screen: Number(selectedScreens[0]),
-            date: showDate,
-            time: showTime,
-            price: Number(ticketPrice)
+            date:   showDate,
+            time:   showTime,
+            price:  Number(ticketPrice),
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setSuccessMessage('Showtime updated successfully!');
+        setSuccessMessage('Showtime updated.');
       } else {
-        // Add new showtime(s)
-        const promises = selectedScreens.map(scr => 
+        const promises = selectedScreens.map(scr =>
           axios.post(
             'http://localhost:5000/api/showtimes',
             {
@@ -327,14 +434,13 @@ function AddShowtimeForm() {
               screen:  Number(scr),
               date:    showDate,
               time:    showTime,
-              price:   Number(ticketPrice)
+              price:   Number(ticketPrice),
             },
             { headers: { Authorization: `Bearer ${token}` } }
           )
         );
-
         await Promise.all(promises);
-        setSuccessMessage('Showtime(s) added successfully!');
+        setSuccessMessage('Showtime(s) added.');
       }
 
       await fetchAllShowtimes();
@@ -347,26 +453,45 @@ function AddShowtimeForm() {
     }
   }
 
+  function toggleScreen(val) {
+    if (editingShowtimeId) {
+      setSelectedScreens([val]);
+    } else {
+      setSelectedScreens(prev =>
+        prev.includes(val) ? prev.filter(s => s !== val) : [...prev, val]
+      );
+    }
+  }
+
   return (
-    <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
-      <div className="admin-form-card" style={{ flex: '1', position: 'sticky', top: '20px' }}>
-        <h3>{editingShowtimeId ? 'Edit Showtime' : 'Add New Showtime'}</h3>
+    <div className="showtime-layout">
+
+      {/* Left: Form */}
+      <div className="admin-form-card" style={{ position: 'sticky', top: '20px' }}>
+        <div className="admin-section-label">
+          {editingShowtimeId ? 'Editing' : 'New Entry'}
+        </div>
+        <h3>{editingShowtimeId ? 'Edit Showtime' : 'Add Showtime'}</h3>
+        <p className="form-subtitle">
+          {editingShowtimeId
+            ? 'Update the details for this screening.'
+            : 'Schedule a new screening across one or more screens.'}
+        </p>
 
         {successMessage && <div className="success-message">{successMessage}</div>}
         {errorMessage   && <div className="admin-error">{errorMessage}</div>}
 
         <form onSubmit={handleAddOrUpdateShowtime}>
 
-          {/* Movie dropdown */}
           <label>Movie</label>
           <select
             className="input-field"
             value={selectedMovieId}
             onChange={(e) => setSelectedMovieId(e.target.value)}
-            disabled={!!editingShowtimeId} // lock movie if editing existing showtime
+            disabled={!!editingShowtimeId}
             required
           >
-            <option value="">-- Select a movie --</option>
+            <option value="">— Select a film —</option>
             {movieList.map((movie) => (
               <option key={movie._id} value={movie._id}>
                 {movie.title} ({movie.language})
@@ -374,40 +499,24 @@ function AddShowtimeForm() {
             ))}
           </select>
 
-          {/* Screen checkboxes */}
           <label>Screens</label>
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '15px', color: '#fff' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                value="1"
-                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                checked={selectedScreens.includes('1')}
-                onChange={(e) => {
-                  if (editingShowtimeId) setSelectedScreens(['1']); // only allow 1 screen at a time in edit mode
-                  else if (e.target.checked) setSelectedScreens([...selectedScreens, '1']);
-                  else setSelectedScreens(selectedScreens.filter((s) => s !== '1'));
-                }}
-              />
-              Screen 1
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'normal', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                value="2"
-                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                checked={selectedScreens.includes('2')}
-                onChange={(e) => {
-                  if (editingShowtimeId) setSelectedScreens(['2']);
-                  else if (e.target.checked) setSelectedScreens([...selectedScreens, '2']);
-                  else setSelectedScreens(selectedScreens.filter((s) => s !== '2'));
-                }}
-              />
-              Screen 2
-            </label>
+          <div className="screen-checks">
+            {['1', '2'].map(val => (
+              <label
+                key={val}
+                className={`screen-check-label ${selectedScreens.includes(val) ? 'is-checked' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  value={val}
+                  checked={selectedScreens.includes(val)}
+                  onChange={() => toggleScreen(val)}
+                />
+                Screen {val}
+              </label>
+            ))}
           </div>
 
-          {/* Date picker */}
           <label>Date</label>
           <input
             type="date"
@@ -417,7 +526,6 @@ function AddShowtimeForm() {
             required
           />
 
-          {/* Time picker */}
           <label>Time</label>
           <input
             type="time"
@@ -427,7 +535,6 @@ function AddShowtimeForm() {
             required
           />
 
-          {/* Price field */}
           <label>Ticket Price (LKR)</label>
           <input
             type="number"
@@ -437,14 +544,16 @@ function AddShowtimeForm() {
             required
           />
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="btn-row">
             <button
               type="submit"
               className="btn-primary"
               style={{ flex: 1 }}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : (editingShowtimeId ? 'Update Showtime' : 'Add Showtime')}
+              {isSubmitting
+                ? 'Saving…'
+                : editingShowtimeId ? 'Update Showtime' : 'Add Showtime'}
             </button>
 
             {editingShowtimeId && (
@@ -452,7 +561,6 @@ function AddShowtimeForm() {
                 type="button"
                 className="btn-secondary"
                 onClick={resetForm}
-                style={{ backgroundColor: '#444' }}
               >
                 Cancel
               </button>
@@ -462,19 +570,20 @@ function AddShowtimeForm() {
         </form>
       </div>
 
-      {/* Showtimes List Table overlaying next to the form */}
-      <div style={{ flex: '1.5', backgroundColor: '#111', padding: '20px', borderRadius: '8px' }}>
-        <h3 style={{ color: '#fff', borderBottom: '1px solid #333', paddingBottom: '10px', marginBottom: '20px' }}>
-          Manage Existing Showtimes
-        </h3>
+      {/* Right: Showtimes Table */}
+      <div className="showtime-table-panel">
+        <div className="showtime-table-panel-header">
+          <h3>Scheduled Screenings</h3>
+          <span className="showtime-count">{allShowtimes.length} total</span>
+        </div>
 
         {allShowtimes.length === 0 ? (
-          <p style={{ color: '#aaa' }}>No showtimes found.</p>
+          <p className="no-bookings-admin">No showtimes scheduled yet.</p>
         ) : (
           <table className="bookings-table">
             <thead>
               <tr>
-                <th>Movie</th>
+                <th>Film</th>
                 <th>Screen</th>
                 <th>Date</th>
                 <th>Time</th>
@@ -484,25 +593,33 @@ function AddShowtimeForm() {
             </thead>
             <tbody>
               {allShowtimes.map(st => (
-                <tr key={st._id}>
+                <tr key={st._id} style={editingShowtimeId === st._id ? { background: 'rgba(212,170,95,0.05)' } : {}}>
                   <td>{st.movieId?.title || 'Unknown'}</td>
-                  <td>Screen {st.screen}</td>
-                  <td>{new Date(st.date).toLocaleDateString()}</td>
-                  <td>{st.time}</td>
-                  <td>Rs {st.price}</td>
                   <td>
-                    <button 
-                      style={{ background: '#eab308', border: 'none', color: '#000', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', marginRight: '5px' }}
-                      onClick={() => handleEditClick(st)}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      style={{ background: '#dc2626', border: 'none', color: '#fff', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}
-                      onClick={() => handleDeleteShowtime(st._id)}
-                    >
-                      Delete
-                    </button>
+                    <span className="badge paid" style={{ padding: '3px 8px' }}>
+                      S{st.screen}
+                    </span>
+                  </td>
+                  <td style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>
+                    {new Date(st.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </td>
+                  <td style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>{st.time}</td>
+                  <td className="table-price">Rs {st.price}</td>
+                  <td>
+                    <div className="btn-row">
+                      <button
+                        className="action-btn edit"
+                        onClick={() => handleEditClick(st)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="action-btn delete"
+                        onClick={() => handleDeleteShowtime(st._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -510,6 +627,7 @@ function AddShowtimeForm() {
           </table>
         )}
       </div>
+
     </div>
   );
 }
@@ -518,20 +636,16 @@ function AddShowtimeForm() {
 // ALL BOOKINGS TABLE
 // ─────────────────────────────────────────
 
-// Table that shows every booking made — admin only
 function AllBookingsTable() {
 
-  // allBookings holds every booking from the backend
   const [allBookings, setAllBookings] = useState([]);
   const [isLoading, setIsLoading]     = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Fetch all bookings when this tab loads
   useEffect(() => {
     fetchAllBookings();
   }, []);
 
-  // Fetches all bookings from the backend
   async function fetchAllBookings() {
     try {
       const token = localStorage.getItem('gkToken');
@@ -546,16 +660,14 @@ function AllBookingsTable() {
     }
   }
 
-  // Calculates total revenue by adding up all booking prices (exclude refunded)
   function calculateTotalRevenue() {
     return allBookings
       .filter(b => b.cancelStatus !== 'refunded')
       .reduce((total, booking) => total + booking.totalPrice, 0);
   }
 
-  // Handle Approve/Reject Cancel Request
   async function handleCancelRequest(bookingId, action) {
-    if (!window.confirm(`Are you sure you want to ${action} this cancellation?`)) return;
+    if (!window.confirm(`${action === 'approve' ? 'Approve' : 'Reject'} this cancellation request?`)) return;
     try {
       const token = localStorage.getItem('gkToken');
       await axios.put(
@@ -563,33 +675,43 @@ function AllBookingsTable() {
         { action },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert(`Cancellation ${action}ed successfully.`);
-      fetchAllBookings(); // refresh list
+      fetchAllBookings();
     } catch (error) {
       alert(error.response?.data?.message || `Failed to ${action} cancellation.`);
     }
   }
 
-  if (isLoading) return <div className="loading">Loading bookings...</div>;
+  if (isLoading) return <div className="loading">Loading bookings…</div>;
   if (errorMessage) return <div className="error">{errorMessage}</div>;
+
+  const totalRevenue = calculateTotalRevenue();
+  const cancelRequests = allBookings.filter(b => b.cancelStatus === 'requested').length;
 
   return (
     <div>
 
-      {/* Revenue summary card */}
-      <div className="revenue-card">
-        <div>
-          <h3>Total Revenue</h3>
-          <p style={{ color: '#666', fontSize: '13px' }}>
-            From {allBookings.length} booking{allBookings.length !== 1 ? 's' : ''}
-          </p>
+      {/* Stats row */}
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-label">Total Revenue</div>
+          <div className="stat-value">LKR {totalRevenue.toLocaleString()}</div>
+          <div className="stat-sub">excl. refunded</div>
         </div>
-        <div className="revenue-amount">
-          LKR {calculateTotalRevenue().toLocaleString()}
+        <div className="stat-card">
+          <div className="stat-label">Total Bookings</div>
+          <div className="stat-value">{allBookings.length}</div>
+          <div className="stat-sub">all time</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Pending Cancellations</div>
+          <div className="stat-value" style={{ color: cancelRequests > 0 ? 'var(--amber)' : 'var(--text-3)' }}>
+            {cancelRequests}
+          </div>
+          <div className="stat-sub">awaiting action</div>
         </div>
       </div>
 
-      {/* No bookings message */}
+      {/* Empty state */}
       {allBookings.length === 0 && (
         <div className="no-bookings-admin">No bookings have been made yet.</div>
       )}
@@ -601,8 +723,8 @@ function AllBookingsTable() {
             <thead>
               <tr>
                 <th>Customer</th>
-                <th>Movie</th>
-                <th>Date & Time</th>
+                <th>Film</th>
+                <th>Date &amp; Time</th>
                 <th>Screen</th>
                 <th>Seats</th>
                 <th>Total</th>
@@ -613,61 +735,60 @@ function AllBookingsTable() {
               {allBookings.map((booking) => (
                 <tr key={booking._id}>
 
-                  {/* Customer name and email */}
                   <td>
                     <div>{booking.userId?.name}</div>
-                    <div style={{ color: '#666', fontSize: '12px' }}>
-                      {booking.userId?.email}
-                    </div>
+                    <div className="table-sub">{booking.userId?.email}</div>
                   </td>
 
-                  {/* Movie title */}
                   <td>{booking.showtimeId?.movieId?.title}</td>
 
-                  {/* Date and time */}
                   <td>
-                    <div>{booking.showtimeId?.date}</div>
-                    <div style={{ color: '#666' }}>{booking.showtimeId?.time}</div>
+                    <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>
+                      {booking.showtimeId?.date}
+                    </div>
+                    <div className="table-sub">{booking.showtimeId?.time}</div>
                   </td>
 
-                  {/* Screen number */}
-                  <td>Screen {booking.showtimeId?.screen}</td>
-
-                  {/* Seats */}
-                  <td>{booking.seats.join(', ')}</td>
-
-                  {/* Total price */}
-                  <td style={{ color: '#e50914', fontWeight: 'bold' }}>
-                    LKR {booking.totalPrice}
+                  <td style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>
+                    S{booking.showtimeId?.screen}
                   </td>
 
-                  {/* Payment status & Actions */}
+                  <td style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>
+                    {booking.seats.join(', ')}
+                  </td>
+
+                  <td className="table-price">
+                    LKR {booking.totalPrice.toLocaleString()}
+                  </td>
+
                   <td>
-                    <div style={{ marginBottom: '5px' }}>
+                    <div style={{ marginBottom: booking.cancelStatus === 'requested' ? '8px' : '0' }}>
                       {booking.paymentStatus === 'paid' && booking.cancelStatus === 'none' && (
-                        <span style={{ background: '#16a34a', color: 'white', padding: '2px 8px', borderRadius: '20px', fontSize: '12px' }}>Paid</span>
+                        <span className="badge paid">Paid</span>
                       )}
                       {booking.cancelStatus === 'requested' && (
-                        <span style={{ background: '#eab308', color: 'black', padding: '2px 8px', borderRadius: '20px', fontSize: '12px' }}>Cancel Requested</span>
+                        <span className="badge requested">Cancel Requested</span>
                       )}
                       {booking.cancelStatus === 'refunded' && (
-                        <span style={{ background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: '20px', fontSize: '12px' }}>Refunded</span>
+                        <span className="badge refunded">Refunded</span>
                       )}
                       {booking.cancelStatus === 'rejected' && (
-                        <span style={{ background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: '20px', fontSize: '12px' }}>Reject Cancel</span>
+                        <span className="badge rejected">Rejected</span>
                       )}
                     </div>
-                    
+
                     {booking.cancelStatus === 'requested' && (
-                      <div style={{ display: 'flex', gap: '5px' }}>
-                        <button 
+                      <div className="btn-row">
+                        <button
+                          className="action-btn approve"
                           onClick={() => handleCancelRequest(booking._id, 'approve')}
-                          style={{ background: '#16a34a', color: 'white', border: 'none', padding: '3px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
+                        >
                           Approve
                         </button>
-                        <button 
+                        <button
+                          className="action-btn reject"
                           onClick={() => handleCancelRequest(booking._id, 'reject')}
-                          style={{ background: '#ef4444', color: 'white', border: 'none', padding: '3px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
+                        >
                           Reject
                         </button>
                       </div>
