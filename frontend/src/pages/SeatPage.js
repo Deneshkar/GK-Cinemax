@@ -4,35 +4,20 @@ import axios from 'axios';
 import { useAuth } from '../AuthContext';
 import '../styles/SeatPage.css';
 
-// The seat page shows a 100-seat grid and lets the user pick their seats
 function SeatPage() {
 
-  // Get the showtime id from the URL
   const { showtimeId } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
-  // showtime holds the full showtime and movie details
-  const [showtime, setShowtime] = useState(null);
-
-  // selectedSeats holds the seats the user has clicked to choose
+  const [showtime, setShowtime]         = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
-
-  // isLoading is true while fetching the showtime
-  const [isLoading, setIsLoading] = useState(true);
-
-  // errorMessage holds any error to show the user
+  const [isLoading, setIsLoading]       = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
-
-  // isProcessing is true while payment is being handled
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Fetch showtime details when the page first loads
-  useEffect(() => {
-    fetchShowtime();
-  }, [showtimeId]);
+  useEffect(() => { fetchShowtime(); }, [showtimeId]);
 
-  // Fetches the showtime from the backend including already booked seats
   async function fetchShowtime() {
     try {
       const response = await axios.get(`http://localhost:5000/api/showtimes/${showtimeId}`);
@@ -44,139 +29,70 @@ function SeatPage() {
     }
   }
 
-  // Builds the list of all 100 seat labels — A1 to J10
   function buildAllSeats() {
-    const rowLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-    const allSeats = [];
-    for (const rowLetter of rowLetters) {
-      const rowSeats = [];
-      for (let seatNumber = 1; seatNumber <= 10; seatNumber++) {
-        rowSeats.push(`${rowLetter}${seatNumber}`);
-      }
-      allSeats.push(rowSeats);
-    }
-    return allSeats;
+    const rows = ['A','B','C','D','E','F','G','H','I','J'];
+    return rows.map(r => Array.from({ length: 10 }, (_, i) => `${r}${i + 1}`));
   }
 
-  // Handles clicking on a seat — selects or deselects it
-  function handleSeatClick(seatLabel) {
-
-    // Do nothing if the seat is already booked by someone else
-    if (showtime.bookedSeats.includes(seatLabel)) {
+  function handleSeatClick(seat) {
+    if (showtime.bookedSeats.includes(seat)) return;
+    if (selectedSeats.includes(seat)) {
+      setSelectedSeats(selectedSeats.filter(s => s !== seat));
       return;
     }
-
-    // If the seat is already selected, remove it from selection
-    if (selectedSeats.includes(seatLabel)) {
-      setSelectedSeats(selectedSeats.filter(seat => seat !== seatLabel));
-      return;
-    }
-
-    // If the user already selected 10 seats, stop them from picking more
     if (selectedSeats.length >= 10) {
       alert('You can only select up to 10 seats at a time.');
       return;
     }
-
-    // Add the seat to the selection
-    setSelectedSeats([...selectedSeats, seatLabel]);
+    setSelectedSeats([...selectedSeats, seat]);
   }
 
-  // Returns the CSS class for a seat based on its status
-  function getSeatClass(seatLabel) {
-    if (showtime.bookedSeats.includes(seatLabel)) return 'seat booked';
-    if (selectedSeats.includes(seatLabel)) return 'seat selected';
-    return 'seat available';
+  function getSeatStatus(seat) {
+    if (showtime.bookedSeats.includes(seat)) return 'booked';
+    if (selectedSeats.includes(seat)) return 'selected';
+    return 'available';
   }
 
-  // Calculates the total price based on number of selected seats
   function calculateTotal() {
     return selectedSeats.length * showtime.price;
   }
 
-  // Handles the payment flow when user clicks Proceed to Pay
   async function handleProceedToPay() {
-
-    // If user is not logged in, send them to the login page first
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
-
-    // Make sure at least one seat is selected
-    if (selectedSeats.length === 0) {
-      alert('Please select at least one seat.');
-      return;
-    }
-
+    if (!currentUser) { navigate('/login'); return; }
+    if (selectedSeats.length === 0) { alert('Please select at least one seat.'); return; }
     setIsProcessing(true);
-
     try {
       const token = localStorage.getItem('gkToken');
       const totalPrice = calculateTotal();
-
-      // Step 1 — Create a Razorpay order on the backend
       const orderResponse = await axios.post(
         'http://localhost:5000/api/payment/create-order',
         { totalPrice },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       const { orderId, amount, currency, keyId } = orderResponse.data;
-
-      // Step 2 — Open the Razorpay payment popup
-      const razorpayOptions = {
-        key: keyId,
-        amount: amount,
-        currency: currency,
+      const options = {
+        key: keyId, amount, currency,
         name: 'GK Cinemax',
         description: `${showtime.movieId.title} — ${selectedSeats.join(', ')}`,
         order_id: orderId,
-
-        // Step 3 — This runs after the user successfully pays
-        handler: async function (paymentResponse) {
-
-          // Verify the payment on the backend
-          await axios.post(
-            'http://localhost:5000/api/payment/verify',
-            {
-              razorpayOrderId: paymentResponse.razorpay_order_id,
-              razorpayPaymentId: paymentResponse.razorpay_payment_id,
-              razorpaySignature: paymentResponse.razorpay_signature
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          // Save the booking to the database
-          await axios.post(
-            'http://localhost:5000/api/bookings',
-            {
-              showtimeId: showtimeId,
-              seats: selectedSeats,
-              totalPrice: totalPrice,
-              razorpayPaymentId: paymentResponse.razorpay_payment_id
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          // Send the user to their bookings page
+        handler: async function (res) {
+          await axios.post('http://localhost:5000/api/payment/verify', {
+            razorpayOrderId: res.razorpay_order_id,
+            razorpayPaymentId: res.razorpay_payment_id,
+            razorpaySignature: res.razorpay_signature
+          }, { headers: { Authorization: `Bearer ${token}` } });
+          await axios.post('http://localhost:5000/api/bookings', {
+            showtimeId, seats: selectedSeats, totalPrice,
+            razorpayPaymentId: res.razorpay_payment_id
+          }, { headers: { Authorization: `Bearer ${token}` } });
           alert('Booking confirmed! Check your email for the QR code.');
           navigate('/my-bookings');
         },
-
-        prefill: {
-          name: currentUser.name,
-          email: currentUser.email
-        },
-        theme: {
-          color: '#e50914'
-        }
+        prefill: { name: currentUser.name, email: currentUser.email },
+        theme: { color: '#D4AA5F' }
       };
-
-      // Open the Razorpay popup
-      const razorpayPopup = new window.Razorpay(razorpayOptions);
-      razorpayPopup.open();
-
+      const rp = new window.Razorpay(options);
+      rp.open();
     } catch (error) {
       alert('Payment failed. Please try again.');
     } finally {
@@ -184,118 +100,181 @@ function SeatPage() {
     }
   }
 
-  if (isLoading) {
-    return <div className="loading">Loading seats...</div>;
-  }
+  if (isLoading) return (
+    <div className="seat-loading">
+      <div className="seat-reel">
+        <div className="sr-dot"></div><div className="sr-dot"></div><div className="sr-dot"></div>
+      </div>
+      <p>Loading seats…</p>
+    </div>
+  );
 
-  if (errorMessage) {
-    return <div className="error">{errorMessage}</div>;
-  }
+  if (errorMessage) return (
+    <div className="seat-error"><span>⚠</span><p>{errorMessage}</p></div>
+  );
 
-  const allSeatRows = buildAllSeats();
+  const allRows = buildAllSeats();
+  const bookedCount   = showtime.bookedSeats.length;
+  const availableCount = 100 - bookedCount;
 
   return (
-    <div>
+    <div className="seat-page">
 
-      {/* Showtime info at the top */}
-      <div className="showtime-info">
-        <h2>{showtime.movieId.title}</h2>
-        <p>
-          📅 {showtime.date} &nbsp;|&nbsp;
-          🕐 {showtime.time} &nbsp;|&nbsp;
-          Screen {showtime.screen} &nbsp;|&nbsp;
-          LKR {showtime.price} per seat
-        </p>
-      </div>
-
-      {/* Screen banner */}
-      <div className="cinema-screen">
-        ── SCREEN ──
-      </div>
-
-      {/* Seat map grid */}
-      <div className="seat-map">
-        {allSeatRows.map((rowSeats, rowIndex) => (
-          <div key={rowIndex} className="seat-row">
-
-            {/* Row label — A, B, C etc */}
-            <span className="row-label">{rowSeats[0][0]}</span>
-
-            {/* The 10 seats in this row */}
-            {rowSeats.map((seatLabel) => (
-              <button
-                key={seatLabel}
-                className={getSeatClass(seatLabel)}
-                onClick={() => handleSeatClick(seatLabel)}
-                title={seatLabel}
-              >
-                {seatLabel.slice(1)}
-              </button>
-            ))}
-
+      {/* ── Showtime header ──────────────────────────────── */}
+      <div className="seat-header">
+        <div className="seat-header-inner">
+          <div>
+            <p className="seat-eyebrow">Now Showing</p>
+            <h1 className="seat-movie-title">{showtime.movieId.title}</h1>
+            <div className="seat-meta-row">
+              <span className="seat-meta-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                {showtime.date}
+              </span>
+              <span className="seat-meta-sep" aria-hidden="true">·</span>
+              <span className="seat-meta-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                {showtime.time}
+              </span>
+              <span className="seat-meta-sep" aria-hidden="true">·</span>
+              <span className="seat-meta-item">Screen {showtime.screen}</span>
+              <span className="seat-meta-sep" aria-hidden="true">·</span>
+              <span className="seat-meta-item seat-price-tag">LKR {showtime.price} / seat</span>
+            </div>
           </div>
-        ))}
-      </div>
-
-      {/* Legend */}
-      <div className="seat-legend">
-        <div className="legend-item">
-          <div className="legend-box available"></div>
-          <span>Available</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-box selected"></div>
-          <span>Selected</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-box booked"></div>
-          <span>Booked</span>
+          <div className="seat-avail-badge">
+            <span className="avail-num">{availableCount}</span>
+            <span className="avail-label">seats left</span>
+          </div>
         </div>
       </div>
 
-      {/* Booking summary panel */}
-      <div className="booking-summary">
-        <h3>Booking Summary</h3>
+      <div className="seat-body">
+        <div className="seat-main">
 
-        {/* Show message if no seats selected yet */}
-        {selectedSeats.length === 0 && (
-          <p className="no-seats-selected">No seats selected yet. Click on seats above to choose.</p>
-        )}
+          {/* ── Screen ──────────────────────────────────── */}
+          <div className="screen-wrap" aria-label="Cinema screen">
+            <div className="screen-bar"></div>
+            <p className="screen-label">SCREEN</p>
+          </div>
 
-        {/* Show selected seats */}
-        {selectedSeats.length > 0 && (
-          <>
-            <div className="summary-row">
-              <span>Selected Seats</span>
-              <span>{selectedSeats.sort().join(', ')}</span>
-            </div>
-            <div className="summary-row">
-              <span>Number of Seats</span>
-              <span>{selectedSeats.length}</span>
-            </div>
-            <div className="summary-row">
-              <span>Price per Seat</span>
-              <span>LKR {showtime.price}</span>
-            </div>
-          </>
-        )}
+          {/* ── Seat grid ───────────────────────────────── */}
+          <div className="seat-grid" role="group" aria-label="Seat selection">
+            {allRows.map((row, ri) => (
+              <div key={ri} className="seat-row">
+                <span className="row-label" aria-hidden="true">{row[0][0]}</span>
+                <div className="row-seats">
+                  {row.map(seat => {
+                    const status = getSeatStatus(seat);
+                    return (
+                      <button
+                        key={seat}
+                        className={`seat seat-${status}`}
+                        onClick={() => handleSeatClick(seat)}
+                        disabled={status === 'booked'}
+                        aria-label={`Seat ${seat} — ${status}`}
+                        aria-pressed={status === 'selected'}
+                        title={seat}
+                      >
+                        <span className="seat-num">{seat.slice(1)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="row-label" aria-hidden="true">{row[0][0]}</span>
+              </div>
+            ))}
+          </div>
 
-        {/* Total price */}
-        <div className="summary-total">
-          <span>Total</span>
-          <span>LKR {calculateTotal()}</span>
+          {/* ── Legend ──────────────────────────────────── */}
+          <div className="seat-legend">
+            <div className="legend-item">
+              <div className="legend-swatch seat-available" aria-hidden="true"></div>
+              <span>Available</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-swatch seat-selected" aria-hidden="true"></div>
+              <span>Selected</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-swatch seat-booked" aria-hidden="true"></div>
+              <span>Booked</span>
+            </div>
+          </div>
+
         </div>
 
-        {/* Proceed to pay button */}
-        <button
-          className="btn-primary"
-          style={{ width: '100%', fontSize: '18px', padding: '16px' }}
-          onClick={handleProceedToPay}
-          disabled={isProcessing || selectedSeats.length === 0}
-        >
-          {isProcessing ? 'Processing...' : 'Proceed to Pay'}
-        </button>
+        {/* ── Summary panel ───────────────────────────── */}
+        <aside className="booking-panel">
+          <div className="panel-rule" aria-hidden="true"></div>
 
+          <p className="panel-label">Booking Summary</p>
+          <h2 className="panel-movie">{showtime.movieId.title}</h2>
+
+          <div className="panel-info-block">
+            <div className="panel-info-row">
+              <span>Date</span>
+              <span>{showtime.date}</span>
+            </div>
+            <div className="panel-info-row">
+              <span>Time</span>
+              <span>{showtime.time}</span>
+            </div>
+            <div className="panel-info-row">
+              <span>Screen</span>
+              <span>Screen {showtime.screen}</span>
+            </div>
+          </div>
+
+          <div className="panel-divider" aria-hidden="true"></div>
+
+          {selectedSeats.length === 0 ? (
+            <p className="panel-empty">Select seats from the grid to continue.</p>
+          ) : (
+            <div className="panel-seats-block">
+              <p className="panel-seats-label">Selected seats</p>
+              <div className="panel-seat-chips">
+                {[...selectedSeats].sort().map(s => (
+                  <span key={s} className="panel-chip">{s}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="panel-divider" aria-hidden="true"></div>
+
+          <div className="panel-calc">
+            {selectedSeats.length > 0 && (
+              <>
+                <div className="panel-calc-row">
+                  <span>{selectedSeats.length} seat{selectedSeats.length !== 1 ? 's' : ''}</span>
+                  <span>× LKR {showtime.price}</span>
+                </div>
+              </>
+            )}
+            <div className="panel-total-row">
+              <span>Total</span>
+              <span className="panel-total-val">
+                LKR {calculateTotal().toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          <button
+            className="panel-pay-btn"
+            onClick={handleProceedToPay}
+            disabled={isProcessing || selectedSeats.length === 0}
+          >
+            {isProcessing
+              ? 'Processing…'
+              : selectedSeats.length === 0
+                ? 'Select seats to continue'
+                : 'Proceed to Pay'}
+          </button>
+
+          <p className="panel-note">Secure payment via Razorpay</p>
+
+        </aside>
       </div>
     </div>
   );

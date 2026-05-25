@@ -23,19 +23,17 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <div className="page-container">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/movie/:id" element={<MoviePage />} />
-          <Route path="/seats/:showtimeId" element={<SeatPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/my-bookings" element={<MyBookingsPage />} />
-          <Route path="/profile" element={<EditProfilePage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/movies/:id" element={<EditMoviePage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/movie/:id" element={<div className="page-container"><MoviePage /></div>} />
+        <Route path="/seats/:showtimeId" element={<SeatPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/my-bookings" element={<MyBookingsPage />} />
+        <Route path="/profile" element={<EditProfilePage />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/movies/:id" element={<div className="page-container"><EditMoviePage /></div>} />
+      </Routes>
     </BrowserRouter>
   );
 }

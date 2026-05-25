@@ -4,68 +4,55 @@ import axios from 'axios';
 import { useAuth } from '../AuthContext';
 import '../styles/AuthPages.css';
 
-// The register page — user fills in their details to create an account
 function RegisterPage() {
 
-  // Form field values
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [userPhone, setUserPhone] = useState('');
-  const [userPassword, setUserPassword] = useState('');
+  const [userName, setUserName]             = useState('');
+  const [userEmail, setUserEmail]           = useState('');
+  const [userPhone, setUserPhone]           = useState('');
+  const [userPassword, setUserPassword]     = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
-  // errorMessage shows any registration error to the user
-  const [errorMessage, setErrorMessage] = useState('');
-
-  // isSubmitting is true while the API call is in progress
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage]     = useState('');
+  const [isSubmitting, setIsSubmitting]     = useState(false);
 
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
 
-  // Handles the register form submission
+  const rules = [
+    { label: 'At least 8 characters',              test: (p) => p.length >= 8 },
+    { label: 'One uppercase letter',               test: (p) => /[A-Z]/.test(p) },
+    { label: 'One lowercase letter',               test: (p) => /[a-z]/.test(p) },
+    { label: 'One number',                         test: (p) => /\d/.test(p) },
+    { label: 'One special character (@$!%*?&)',    test: (p) => /[@$!%*?&]/.test(p) },
+  ];
+
   async function handleRegister(event) {
-
-    // Prevent the browser from refreshing the page on form submit
     event.preventDefault();
     setErrorMessage('');
 
-    // Check that both passwords match before sending to backend
     if (userPassword !== confirmPassword) {
       setErrorMessage('Passwords do not match.');
       return;
     }
 
-    // Strict valid email check (RFC 5322 Standard format)
     const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (!emailRegex.test(userEmail)) {
-      setErrorMessage('Please provide a valid working email address.');
+      setErrorMessage('Please provide a valid email address.');
       return;
     }
 
-    // Strict password check
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(userPassword)) {
-      setErrorMessage('Password must be at least 8 characters, include uppercase, lowercase, number, and special character.');
+      setErrorMessage('Password does not meet all requirements.');
       return;
     }
 
     setIsSubmitting(true);
-
     try {
       const response = await axios.post('http://localhost:5000/api/auth/register', {
-        name: userName,
-        email: userEmail,
-        phone: userPhone,
-        password: userPassword
+        name: userName, email: userEmail, phone: userPhone, password: userPassword
       });
-
-      // Save the user and token — auto login after register
       login(response.data.user, response.data.token);
-
-      // Send the user to the home page
       navigate('/');
-
     } catch (error) {
       setErrorMessage(error.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -75,113 +62,112 @@ function RegisterPage() {
 
   return (
     <div className="auth-container">
+
+      <div className="auth-glow auth-glow-left"  aria-hidden="true"></div>
+      <div className="auth-glow auth-glow-right" aria-hidden="true"></div>
+
       <div className="auth-card">
 
-        {/* Title */}
-        <h2>
-          <span className="logo-gk">GK</span> 
-          <span className="logo-cine">Cine</span>
-          <span className="logo-max">max</span>
-        </h2>
-        <p className="auth-subtitle">Join us and start booking tickets</p>
+        <div className="auth-card-rule" aria-hidden="true"></div>
 
-        {/* Error message */}
+        <div className="auth-logo">
+          GK <span className="auth-logo-accent">Cinemax</span>
+        </div>
+
+        <p className="auth-eyebrow">New Member</p>
+        <h1 className="auth-heading">Join us.</h1>
+        <p className="auth-sub">Create an account to start booking.</p>
+
         {errorMessage && (
-          <div className="auth-error">{errorMessage}</div>
+          <div className="auth-error" role="alert">{errorMessage}</div>
         )}
 
-        {/* Register form */}
-        <form onSubmit={handleRegister}>
+        <form onSubmit={handleRegister} noValidate>
 
-          {/* Name field */}
-          <label>Full Name</label>
+          <label className="field-label">Full Name</label>
           <input
             type="text"
-            className="input-field"
+            className="auth-input"
             placeholder="Your full name"
             value={userName}
-            onChange={(event) => setUserName(event.target.value)}
+            onChange={(e) => setUserName(e.target.value)}
             required
+            autoComplete="name"
           />
 
-          {/* Email field */}
-          <label>Email Address</label>
+          <label className="field-label">Email Address</label>
           <input
             type="email"
-            className="input-field"
+            className="auth-input"
             placeholder="you@example.com"
             value={userEmail}
-            onChange={(event) => setUserEmail(event.target.value)}
+            onChange={(e) => setUserEmail(e.target.value)}
             required
+            autoComplete="email"
           />
 
-          {/* Phone field */}
-          <label>Phone Number</label>
+          <label className="field-label">Phone Number</label>
           <input
             type="tel"
-            className="input-field"
+            className="auth-input"
             placeholder="07X XXX XXXX"
             value={userPhone}
-            onChange={(event) => setUserPhone(event.target.value)}
+            onChange={(e) => setUserPhone(e.target.value)}
             required
+            autoComplete="tel"
           />
 
-          {/* Password field */}
-          <label>Password</label>
+          <label className="field-label">Password</label>
           <input
             type="password"
-            className="input-field"
+            className="auth-input"
             placeholder="Create a strong password"
             value={userPassword}
-            onChange={(event) => setUserPassword(event.target.value)}
+            onChange={(e) => setUserPassword(e.target.value)}
             required
+            autoComplete="new-password"
           />
 
-          {/* Dynamic Password Requirements */}
-          <ul className="password-requirements">
-            <li className={userPassword.length >= 8 ? 'req-met' : 'req-unmet'}>
-              <span className="req-icon">{userPassword.length >= 8 ? '✓' : '✗'}</span> At least 8 characters
-            </li>
-            <li className={/[A-Z]/.test(userPassword) ? 'req-met' : 'req-unmet'}>
-              <span className="req-icon">{/[A-Z]/.test(userPassword) ? '✓' : '✗'}</span> One uppercase letter
-            </li>
-            <li className={/[a-z]/.test(userPassword) ? 'req-met' : 'req-unmet'}>
-              <span className="req-icon">{/[a-z]/.test(userPassword) ? '✓' : '✗'}</span> One lowercase letter
-            </li>
-            <li className={/\d/.test(userPassword) ? 'req-met' : 'req-unmet'}>
-              <span className="req-icon">{/\d/.test(userPassword) ? '✓' : '✗'}</span> One number
-            </li>
-            <li className={/[@$!%*?&]/.test(userPassword) ? 'req-met' : 'req-unmet'}>
-              <span className="req-icon">{/[@$!%*?&]/.test(userPassword) ? '✓' : '✗'}</span> One special character (@$!%*?&)
-            </li>
-          </ul>
+          {/* Live password requirements */}
+          {userPassword.length > 0 && (
+            <ul className="pwd-rules">
+              {rules.map((r, i) => {
+                const met = r.test(userPassword);
+                return (
+                  <li key={i} className={met ? 'rule-met' : 'rule-unmet'}>
+                    <span className="rule-dot" aria-hidden="true"></span>
+                    {r.label}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
 
-          {/* Confirm password field */}
-          <label>Confirm Password</label>
+          <label className="field-label">Confirm Password</label>
           <input
             type="password"
-            className="input-field"
+            className="auth-input"
             placeholder="Repeat your password"
             value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            autoComplete="new-password"
           />
 
-          {/* Submit button */}
           <button
             type="submit"
-            className="auth-submit-btn"
+            className="auth-btn"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating account...' : 'Create Account'}
+            {isSubmitting ? 'Creating account…' : 'Create Account'}
           </button>
 
         </form>
 
-        {/* Link to login page */}
-        <div className="auth-switch">
-          Already have an account? <Link to="/login">Login here</Link>
-        </div>
+        <p className="auth-switch">
+          Already have an account?{' '}
+          <Link to="/login">Sign in</Link>
+        </p>
 
       </div>
     </div>
