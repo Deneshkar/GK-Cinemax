@@ -11,6 +11,8 @@ function RegisterPage() {
   const [userPhone, setUserPhone]           = useState('');
   const [userPassword, setUserPassword]     = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword]     = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage]     = useState('');
   const [isSubmitting, setIsSubmitting]     = useState(false);
 
@@ -61,7 +63,10 @@ function RegisterPage() {
   }
 
   return (
-    <div className="auth-container">
+    <div
+      className="auth-container"
+      style={{ '--auth-bg-image': `url(${process.env.PUBLIC_URL}/page.jpg)` }}
+    >
 
       <div className="auth-glow auth-glow-left"  aria-hidden="true"></div>
       <div className="auth-glow auth-glow-right" aria-hidden="true"></div>
@@ -118,15 +123,26 @@ function RegisterPage() {
           />
 
           <label className="field-label">Password</label>
-          <input
-            type="password"
-            className="auth-input"
-            placeholder="Create a strong password"
-            value={userPassword}
-            onChange={(e) => setUserPassword(e.target.value)}
-            required
-            autoComplete="new-password"
-          />
+          <div className="auth-password-field">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              className="auth-input auth-input-with-action"
+              placeholder="Create a strong password"
+              value={userPassword}
+              onChange={(e) => setUserPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              className="auth-password-toggle"
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
 
           {/* Live password requirements */}
           {userPassword.length > 0 && (
@@ -144,15 +160,26 @@ function RegisterPage() {
           )}
 
           <label className="field-label">Confirm Password</label>
-          <input
-            type="password"
-            className="auth-input"
-            placeholder="Repeat your password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            autoComplete="new-password"
-          />
+          <div className="auth-password-field">
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              className="auth-input auth-input-with-action"
+              placeholder="Repeat your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              className="auth-password-toggle"
+              onClick={() => setShowConfirmPassword((current) => !current)}
+              aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              aria-pressed={showConfirmPassword}
+            >
+              {showConfirmPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
 
           <button
             type="submit"

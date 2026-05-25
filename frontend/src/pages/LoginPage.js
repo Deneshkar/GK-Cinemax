@@ -8,6 +8,7 @@ function LoginPage() {
 
   const [userEmail, setUserEmail]       = useState('');
   const [userPassword, setUserPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,7 +34,10 @@ function LoginPage() {
   }
 
   return (
-    <div className="auth-container">
+    <div
+      className="auth-container"
+      style={{ '--auth-bg-image': `url(${process.env.PUBLIC_URL}/page.jpg)` }}
+    >
 
       {/* Ambient spotlights */}
       <div className="auth-glow auth-glow-left"  aria-hidden="true"></div>
@@ -71,15 +75,26 @@ function LoginPage() {
           />
 
           <label className="field-label">Password</label>
-          <input
-            type="password"
-            className="auth-input"
-            placeholder="Enter your password"
-            value={userPassword}
-            onChange={(e) => setUserPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
+          <div className="auth-password-field">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              className="auth-input auth-input-with-action"
+              placeholder="Enter your password"
+              value={userPassword}
+              onChange={(e) => setUserPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="auth-password-toggle"
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
 
           <button
             type="submit"
