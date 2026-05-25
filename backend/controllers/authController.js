@@ -1,6 +1,11 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { sendEmail } = require('../utils/email');
+
+const EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+const OTP_EXPIRY_MS = 10 * 60 * 1000;
 
 // Creates a JWT token for a user using their id, email and isAdmin status
 function createToken(user) {
@@ -17,14 +22,12 @@ async function register(req, res) {
     const { name, email, password, phone } = req.body;
 
     // Strict Email Validation (RFC 5322 Standard)
-    const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if (!emailRegex.test(email)) {
+    if (!EMAIL_REGEX.test(email)) {
       return res.status(400).json({ message: 'Please provide a valid and real email address format' });
     }
 
     // Strict Password Validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
+    if (!PASSWORD_REGEX.test(password)) {
       return res.status(400).json({ message: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
     }
 
@@ -110,8 +113,7 @@ async function updateProfile(req, res) {
     
     // Only update email if it's changing and validate it
     if (req.body.email && req.body.email !== user.email) {
-      const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      if (!emailRegex.test(req.body.email)) {
+      if (!EMAIL_REGEX.test(req.body.email)) {
         return res.status(400).json({ message: 'Please provide a valid email address format' });
       }
       // Check if new email is already taken
@@ -124,8 +126,7 @@ async function updateProfile(req, res) {
 
     // Only update password if provided and validate it
     if (req.body.password) {
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(req.body.password)) {
+      if (!PASSWORD_REGEX.test(req.body.password)) {
         return res.status(400).json({ message: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
       }
       user.password = await bcrypt.hash(req.body.password, 10);
@@ -144,4 +145,102 @@ async function updateProfile(req, res) {
   }
 }
 
-module.exports = { register, login, getProfile, updateProfile };
+// Sends a one-time password to the user's email for password reset
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+
+    if (!email || !EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+    const user = await User.findOne({ email: email.trim() });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email address' });
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    user.resetPasswordOtp = await bcrypt.hash(otp, 10);
+    user.resetPasswordExpires = new Date(Date.now() + OTP_EXPIRY_MS);
+    await user.save();
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'GK Cinemax — Password Reset Code',
+        html: `
+          <h2>Password Reset Request</h2>
+          <p>Hi ${user.name},</p>
+          <p>Use the code below to reset your GK Cinemax password. This code expires in 10 minutes.</p>
+          <p style="font-size: 28px; font-weight: bold; letter-spacing: 6px;">${otp}</p>
+          <p>If you did not request this, you can ignore this email.</p>
+        `
+      });
+    } catch (emailError) {
+      const isProduction = process.env.NODE_ENV === 'production';
+      if (!isProduction) {
+        console.log(`[Password Reset] OTP for ${user.email}: ${otp}`);
+      } else {
+        user.resetPasswordOtp = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+        return res.status(500).json({
+          message: 'Failed to send OTP email. Check EMAIL_USER and EMAIL_PASS in your server .env file.'
+        });
+      }
+    }
+
+    res.json({ message: 'A 6-digit OTP has been sent to your email. It expires in 10 minutes.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+// Verifies OTP and sets a new password
+async function resetPassword(req, res) {
+  try {
+    const { email, otp, password } = req.body;
+
+    if (!email || !EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+    if (!otp || !/^\d{6}$/.test(String(otp).trim())) {
+      return res.status(400).json({ message: 'Please enter the 6-digit OTP from your email' });
+    }
+
+    if (!password || !PASSWORD_REGEX.test(password)) {
+      return res.status(400).json({
+        message: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.'
+      });
+    }
+
+    const user = await User.findOne({ email: email.trim() });
+    if (!user || !user.resetPasswordOtp || !user.resetPasswordExpires) {
+      return res.status(400).json({ message: 'Invalid or expired OTP. Please request a new one.' });
+    }
+
+    if (user.resetPasswordExpires < new Date()) {
+      user.resetPasswordOtp = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save();
+      return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
+    }
+
+    const otpMatch = await bcrypt.compare(String(otp).trim(), user.resetPasswordOtp);
+    if (!otpMatch) {
+      return res.status(400).json({ message: 'Invalid OTP. Please check the code and try again.' });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successful. You can now sign in with your new password.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+module.exports = { register, login, getProfile, updateProfile, forgotPassword, resetPassword };

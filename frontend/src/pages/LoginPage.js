@@ -96,6 +96,10 @@ function LoginPage() {
             </button>
           </div>
 
+          <p className="auth-forgot-row">
+            <Link to="/forgot-password">Forgot password?</Link>
+          </p>
+
           <button
             type="submit"
             className="auth-btn"

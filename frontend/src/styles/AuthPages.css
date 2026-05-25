@@ -358,6 +358,70 @@
   cursor: not-allowed;
 }
 
+/* ── Forgot password link ─────────────────────────────────── */
+.auth-forgot-row {
+  text-align: right;
+  margin: -8px 0 16px;
+  font-size: 12px;
+}
+
+.auth-forgot-row a {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.auth-forgot-row a:hover {
+  color: var(--gold-pale);
+}
+
+.auth-otp-input {
+  font-family: var(--ff-mono);
+  font-size: 22px;
+  letter-spacing: 0.35em;
+  text-align: center;
+}
+
+.auth-success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--green-dim);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  color: var(--green);
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  margin-bottom: 24px;
+}
+
+.auth-link-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: var(--gold);
+  font-family: var(--ff-body);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.auth-link-btn:hover:not(:disabled) {
+  color: var(--gold-pale);
+}
+
+.auth-link-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ── Switch link ────────────────────────────────────────── */
 .auth-switch {
   text-align: center;

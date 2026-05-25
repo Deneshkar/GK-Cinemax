@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import MoviePage from './pages/MoviePage';
 import SeatPage from './pages/SeatPage';
 import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import RegisterPage from './pages/RegisterPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import AdminDashboard from './pages/AdminDashboard';
@@ -28,6 +29,7 @@ function App() {
         <Route path="/movie/:id" element={<div className="page-container"><MoviePage /></div>} />
         <Route path="/seats/:showtimeId" element={<SeatPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/my-bookings" element={<MyBookingsPage />} />
         <Route path="/profile" element={<EditProfilePage />} />
