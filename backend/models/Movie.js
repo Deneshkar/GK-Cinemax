@@ -44,6 +44,11 @@ const movieSchema = new mongoose.Schema({
     default: false
   },
 
+  advanceBookingEnabled: {
+    type: Boolean,
+    default: false
+  },
+
   releaseDate: {
     type: String,
     default: ''

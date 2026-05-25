@@ -301,6 +301,23 @@ function ComingSoonSection() {
                 COMING SOON
               </span>
 
+              {movie.advanceBookingEnabled && (
+                <span style={{
+                  marginLeft: '8px',
+                  background: 'rgba(212, 160, 23, 0.14)',
+                  color: '#f5d27d',
+                  border: '1px solid rgba(212, 160, 23, 0.35)',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  padding: '2px 8px',
+                  borderRadius: '10px',
+                  letterSpacing: '1px',
+                  display: 'inline-block'
+                }}>
+                  PRE-BOOK OPEN
+                </span>
+              )}
+
               <h3>{movie.title}</h3>
               <p>{movie.language}</p>
 

@@ -41,6 +41,7 @@ function ComingSoonPage() {
   function formatReleaseDate(dateString) {
     if (!dateString) return null;
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return null;
     return date.toLocaleDateString('en-GB', {
       day: 'numeric',
       month: 'long',
@@ -49,7 +50,7 @@ function ComingSoonPage() {
   }
 
   function handleMovieCardClick(movieId) {
-    if (currentUser && currentUser.isAdmin) {
+    if (currentUser?.isAdmin) {
       navigate(`/admin/movies/${movieId}`);
     } else {
       navigate(`/movie/${movieId}`); // or maybe a coming-soon detail page, but at least admin can edit!
@@ -89,6 +90,10 @@ function ComingSoonPage() {
 
               <div className="coming-soon-badge">COMING SOON</div>
 
+              {movie.advanceBookingEnabled && (
+                <div className="advance-booking-badge">ADVANCE BOOKING OPEN</div>
+              )}
+
               <h3>{movie.title}</h3>
 
               <p className="meta">
@@ -104,6 +109,19 @@ function ComingSoonPage() {
                 <p className="release-date">
                   🗓 Releasing {formatReleaseDate(movie.releaseDate)}
                 </p>
+              )}
+
+              {movie.advanceBookingEnabled && !currentUser?.isAdmin && (
+                <button
+                  type="button"
+                  className="advance-booking-btn"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    navigate(`/movie/${movie._id}`);
+                  }}
+                >
+                  Pre-book Now
+                </button>
               )}
 
             </div>

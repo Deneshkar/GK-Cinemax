@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { getAllMovies, getOneMovie, addMovie, updateMovie, deleteMovie, getComingSoonMovies } = require('../controllers/movieController');
+const { getAllMovies, getAllMoviesForAdmin, getOneMovie, addMovie, updateMovie, deleteMovie, getComingSoonMovies } = require('../controllers/movieController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const upload = multer({ dest: 'uploads/' });
@@ -11,6 +11,9 @@ router.get('/', getAllMovies);
 
 // GET /api/movies/coming-soon — get all coming soon movies
 router.get('/coming-soon', getComingSoonMovies);
+
+// GET /api/movies/admin/all — get all movies for admin scheduling
+router.get('/admin/all', protect, adminOnly, getAllMoviesForAdmin);
 
 // GET /api/movies/:id — get one movie by id
 router.get('/:id', getOneMovie);

@@ -55,7 +55,9 @@ function MoviePage() {
 
   // Formats a date string like "2024-06-20" to "Thu, 20 Jun 2024"
   function formatDate(dateString) {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'N/A';
     return date.toLocaleDateString('en-GB', {
       weekday: 'short',
       day: 'numeric',
@@ -107,6 +109,19 @@ function MoviePage() {
 
           {/* Movie description */}
           <p className="movie-description">{movie.description}</p>
+
+          {movie.comingSoon && movie.advanceBookingEnabled && (
+            <div className="advance-booking-note" style={{
+              background: 'rgba(212, 160, 23, 0.08)',
+              border: '1px solid rgba(212, 160, 23, 0.25)',
+              borderRadius: '10px',
+              padding: '14px 16px',
+              color: '#f5d27d',
+              marginBottom: '24px'
+            }}>
+              Advance booking is open for this upcoming movie. Select a showtime below to pre-book your seats.
+            </div>
+          )}
 
         </div>
       </div>

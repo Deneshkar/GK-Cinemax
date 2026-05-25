@@ -15,6 +15,8 @@ const emailTransporter = nodemailer.createTransport({
 // Sends a booking confirmation email to the user with their QR code
 async function sendConfirmationEmail(userEmail, userName, bookingDetails, qrCode) {
   try {
+    const qrBase64 = qrCode.replace(/^data:image\/png;base64,/, '');
+
     await emailTransporter.sendMail({
       from: process.env.EMAIL_USER,
       to: userEmail,
@@ -30,8 +32,15 @@ async function sendConfirmationEmail(userEmail, userName, bookingDetails, qrCode
         <p><strong>Seats:</strong> ${bookingDetails.seats.join(', ')}</p>
         <p><strong>Total Paid:</strong> LKR ${bookingDetails.totalPrice}</p>
         <p>Show this QR code at the cinema entrance:</p>
-        <img src="${qrCode}" alt="Your QR Code" />
-      `
+        <img src="cid:booking-qr-code" alt="Your QR Code" />
+      `,
+      attachments: [
+        {
+          filename: 'booking-qr-code.png',
+          content: Buffer.from(qrBase64, 'base64'),
+          cid: 'booking-qr-code'
+        }
+      ]
     });
   } catch (error) {
     console.log('Email sending failed:', error.message);

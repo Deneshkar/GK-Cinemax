@@ -79,6 +79,7 @@ function AddMovieForm() {
 
   // NEW
   const [isComingSoon, setIsComingSoon] = useState(false);
+  const [isAdvanceBookingEnabled, setIsAdvanceBookingEnabled] = useState(false);
   const [releaseDate, setReleaseDate]   = useState('');
 
   const [successMessage, setSuccessMessage] = useState('');
@@ -111,6 +112,7 @@ function AddMovieForm() {
 
       // NEW
       formData.append('comingSoon', isComingSoon);
+      formData.append('advanceBookingEnabled', isAdvanceBookingEnabled);
       formData.append('releaseDate', releaseDate);
 
       await axios.post(
@@ -138,6 +140,7 @@ function AddMovieForm() {
       setPosterFileName('');
 
       setIsComingSoon(false);
+      setIsAdvanceBookingEnabled(false);
       setReleaseDate('');
 
     } catch (error) {
@@ -283,6 +286,17 @@ function AddMovieForm() {
 
         {isComingSoon && (
           <>
+            <div className="field-label">Advance Booking</div>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px', fontFamily: 'var(--ff-body)', color: 'var(--text-2)', textTransform: 'none', letterSpacing: '0' }}>
+              <input
+                type="checkbox"
+                checked={isAdvanceBookingEnabled}
+                onChange={(e)=>setIsAdvanceBookingEnabled(e.target.checked)}
+              />
+              Allow users to pre-book this upcoming movie
+            </label>
+
             <label>
               Expected Release Date
             </label>
@@ -325,6 +339,13 @@ function AddMovieForm() {
 
 function AddShowtimeForm() {
 
+  function formatDateSafely(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
   const [movieList, setMovieList]             = useState([]);
   const [allShowtimes, setAllShowtimes]       = useState([]);
 
@@ -346,8 +367,12 @@ function AddShowtimeForm() {
 
   async function fetchMovies() {
     try {
+      const token = localStorage.getItem('gkToken');
       const response = await axios.get('http://localhost:5000/api/movies');
-      setMovieList(response.data);
+      const adminResponse = await axios.get('http://localhost:5000/api/movies/admin/all', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMovieList(adminResponse.data.length > 0 ? adminResponse.data : response.data);
     } catch (error) {
       setErrorMessage('Failed to load movies.');
     }
@@ -494,7 +519,7 @@ function AddShowtimeForm() {
             <option value="">— Select a film —</option>
             {movieList.map((movie) => (
               <option key={movie._id} value={movie._id}>
-                {movie.title} ({movie.language})
+                {movie.title} ({movie.language}){movie.comingSoon ? ' - Coming Soon' : ''}
               </option>
             ))}
           </select>
@@ -601,7 +626,7 @@ function AddShowtimeForm() {
                     </span>
                   </td>
                   <td style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>
-                    {new Date(st.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {formatDateSafely(st.date)}
                   </td>
                   <td style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>{st.time}</td>
                   <td className="table-price">Rs {st.price}</td>

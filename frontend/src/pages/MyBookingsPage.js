@@ -46,7 +46,10 @@ function MyBookingsPage() {
   }
 
   function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString('en-GB', {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleDateString('en-GB', {
       weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
     });
   }
@@ -129,12 +132,14 @@ function MyBookingsPage() {
                   <div className="meta-divider" aria-hidden="true"></div>
                   <div className="meta-item">
                     <span className="meta-label">Time</span>
-                    <span className="meta-value">{booking.showtimeId?.time}</span>
+                    <span className="meta-value">{booking.showtimeId?.time || 'N/A'}</span>
                   </div>
                   <div className="meta-divider" aria-hidden="true"></div>
                   <div className="meta-item">
                     <span className="meta-label">Screen</span>
-                    <span className="meta-value">S{booking.showtimeId?.screen}</span>
+                    <span className="meta-value">
+                      {booking.showtimeId ? `S${booking.showtimeId.screen}` : 'N/A'}
+                    </span>
                   </div>
                 </div>
 

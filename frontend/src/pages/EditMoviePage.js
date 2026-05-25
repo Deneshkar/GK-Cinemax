@@ -20,6 +20,7 @@ function EditMoviePage() {
   const [newPosterFile, setNewPosterFile]       = useState(null);
   const [isShowing, setIsShowing]               = useState(true);
   const [isComingSoon, setIsComingSoon]         = useState(false);
+  const [isAdvanceBookingEnabled, setIsAdvanceBookingEnabled] = useState(false);
   const [releaseDate, setReleaseDate]           = useState('');
 
   const [isLoading, setIsLoading]       = useState(true);
@@ -52,6 +53,7 @@ function EditMoviePage() {
       setExistingPosterUrl(movie.posterUrl);
       setIsShowing(movie.isShowing);
       setIsComingSoon(movie.comingSoon || false);
+      setIsAdvanceBookingEnabled(movie.advanceBookingEnabled || false);
       setReleaseDate(movie.releaseDate || '');
     } catch (error) {
       setErrorMessage('Failed to load movie.');
@@ -78,6 +80,7 @@ function EditMoviePage() {
       formData.append('description', movieDescription);
       formData.append('isShowing',   !isComingSoon);
       formData.append('comingSoon', isComingSoon);
+      formData.append('advanceBookingEnabled', isAdvanceBookingEnabled);
       formData.append('releaseDate', releaseDate);
 
       // Only attach a new poster if the admin chose one
@@ -200,7 +203,13 @@ function EditMoviePage() {
           <select
             className="input-field"
             value={isComingSoon ? 'comingSoon' : 'nowShowing'}
-            onChange={(e) => setIsComingSoon(e.target.value === 'comingSoon')}
+            onChange={(e) => {
+              const comingSoonSelected = e.target.value === 'comingSoon';
+              setIsComingSoon(comingSoonSelected);
+              if (!comingSoonSelected) {
+                setIsAdvanceBookingEnabled(false);
+              }
+            }}
           >
             <option value="nowShowing">Now Showing</option>
             <option value="comingSoon">Coming Soon</option>
@@ -209,6 +218,16 @@ function EditMoviePage() {
           {/* Only show release date field when Coming Soon is selected */}
           {isComingSoon && (
             <>
+              <div className="field-label">Advance Booking</div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px', color: '#aaa', textTransform: 'none', letterSpacing: '0' }}>
+                <input
+                  type="checkbox"
+                  checked={isAdvanceBookingEnabled}
+                  onChange={(e) => setIsAdvanceBookingEnabled(e.target.checked)}
+                />
+                Allow users to pre-book this upcoming movie
+              </label>
+
               <label>Expected Release Date</label>
               <input
                 type="date"

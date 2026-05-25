@@ -28,7 +28,7 @@ async function getOneMovie(req, res) {
 // The poster image is uploaded to Cloudinary first
 async function addMovie(req, res) {
   try {
-    const { title, language, duration, description, comingSoon, releaseDate } = req.body;
+    const { title, language, duration, description, comingSoon, advanceBookingEnabled, releaseDate } = req.body;
 
     // Upload the poster image file to Cloudinary
     const uploadResult = await cloudinary.uploader.upload(req.file.path, {
@@ -42,6 +42,7 @@ async function addMovie(req, res) {
       duration,
       description,
       comingSoon: comingSoon === 'true',
+      advanceBookingEnabled: comingSoon === 'true' && advanceBookingEnabled === 'true',
       isShowing: comingSoon !== 'true',
       releaseDate,
       posterUrl: uploadResult.secure_url
@@ -61,7 +62,7 @@ async function addMovie(req, res) {
 // If a new poster is uploaded it replaces the old one in Cloudinary
 async function updateMovie(req, res) {
   try {
-    const { title, language, duration, description, isShowing, comingSoon, releaseDate } = req.body;
+    const { title, language, duration, description, isShowing, comingSoon, advanceBookingEnabled, releaseDate } = req.body;
 
     // Build the update object with the new values
     const updateData = {
@@ -71,6 +72,7 @@ async function updateMovie(req, res) {
       description,
       isShowing: isShowing === 'true',
       comingSoon: comingSoon === 'true',
+      advanceBookingEnabled: comingSoon === 'true' && advanceBookingEnabled === 'true',
       releaseDate
     };
 
@@ -141,6 +143,15 @@ async function getAllMovies(req, res) {
   }
 }
 
+async function getAllMoviesForAdmin(req, res) {
+  try {
+    const movieList = await Movie.find().sort({ createdAt: -1 });
+    res.json(movieList);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
 async function getComingSoonMovies(req, res){
   try{
     const movieList = await Movie.find({comingSoon:true});
@@ -152,6 +163,7 @@ async function getComingSoonMovies(req, res){
 
 module.exports = {
   getAllMovies,
+  getAllMoviesForAdmin,
   getComingSoonMovies,
   getOneMovie,
   addMovie,
