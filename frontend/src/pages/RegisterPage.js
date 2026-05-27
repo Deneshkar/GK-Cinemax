@@ -4,16 +4,23 @@ import axios from 'axios';
 import { useAuth } from '../AuthContext';
 import '../styles/AuthPages.css';
 
+const API_BASE = 'http://localhost:5000/api/auth';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
 function RegisterPage() {
 
+  const [registrationStep, setRegistrationStep] = useState('details');
   const [userName, setUserName]             = useState('');
   const [userEmail, setUserEmail]           = useState('');
   const [userPhone, setUserPhone]           = useState('');
   const [userPassword, setUserPassword]     = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [registrationOtp, setRegistrationOtp] = useState('');
   const [showPassword, setShowPassword]     = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage]     = useState('');
+  const [successMessage, setSuccessMessage]  = useState('');
   const [isSubmitting, setIsSubmitting]     = useState(false);
 
   const { login } = useAuth();
@@ -27,36 +34,79 @@ function RegisterPage() {
     { label: 'One special character (@$!%*?&)',    test: (p) => /[@$!%*?&]/.test(p) },
   ];
 
-  async function handleRegister(event) {
+  async function handleRequestOtp(event) {
     event.preventDefault();
     setErrorMessage('');
+    setSuccessMessage('');
 
     if (userPassword !== confirmPassword) {
       setErrorMessage('Passwords do not match.');
       return;
     }
 
-    const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if (!emailRegex.test(userEmail)) {
+    if (!EMAIL_REGEX.test(userEmail)) {
       setErrorMessage('Please provide a valid email address.');
       return;
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(userPassword)) {
+    if (!PASSWORD_REGEX.test(userPassword)) {
       setErrorMessage('Password does not meet all requirements.');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
+      const response = await axios.post(`${API_BASE}/register`, {
         name: userName, email: userEmail, phone: userPhone, password: userPassword
+      });
+      setSuccessMessage(response.data.message);
+      setRegistrationStep('otp');
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleVerifyOtp(event) {
+    event.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    if (!/^\d{6}$/.test(registrationOtp.trim())) {
+      setErrorMessage('Please enter the 6-digit OTP sent to your email.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await axios.post(`${API_BASE}/register`, {
+        email: userEmail,
+        otp: registrationOtp.trim(),
       });
       login(response.data.user, response.data.token);
       navigate('/');
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || 'Registration failed. Please try again.');
+      setErrorMessage(error.response?.data?.message || 'OTP verification failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    setErrorMessage('');
+    setSuccessMessage('');
+    setIsSubmitting(true);
+    try {
+      const response = await axios.post(`${API_BASE}/register`, {
+        name: userName,
+        email: userEmail,
+        phone: userPhone,
+        password: userPassword,
+      });
+      setSuccessMessage(response.data.message);
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || 'Failed to resend OTP. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -81,16 +131,26 @@ function RegisterPage() {
 
         <p className="auth-eyebrow">New Member</p>
         <h1 className="auth-heading">Join us.</h1>
-        <p className="auth-sub">Create an account to start booking.</p>
+        <p className="auth-sub">
+          {registrationStep === 'details'
+            ? 'Create your details, then verify your email with a one-time code.'
+            : `Enter the 6-digit code sent to ${userEmail}`}
+        </p>
 
         {errorMessage && (
           <div className="auth-error" role="alert">{errorMessage}</div>
         )}
 
-        <form onSubmit={handleRegister} noValidate>
+        {successMessage && (
+          <output className="auth-success">{successMessage}</output>
+        )}
 
-          <label className="field-label">Full Name</label>
+        {registrationStep === 'details' && (
+          <form onSubmit={handleRequestOtp} noValidate>
+
+          <label className="field-label" htmlFor="register-name">Full Name</label>
           <input
+            id="register-name"
             type="text"
             className="auth-input"
             placeholder="Your full name"
@@ -100,8 +160,9 @@ function RegisterPage() {
             autoComplete="name"
           />
 
-          <label className="field-label">Email Address</label>
+          <label className="field-label" htmlFor="register-email">Email Address</label>
           <input
+            id="register-email"
             type="email"
             className="auth-input"
             placeholder="you@example.com"
@@ -111,8 +172,9 @@ function RegisterPage() {
             autoComplete="email"
           />
 
-          <label className="field-label">Phone Number</label>
+          <label className="field-label" htmlFor="register-phone">Phone Number</label>
           <input
+            id="register-phone"
             type="tel"
             className="auth-input"
             placeholder="07X XXX XXXX"
@@ -122,9 +184,10 @@ function RegisterPage() {
             autoComplete="tel"
           />
 
-          <label className="field-label">Password</label>
+          <label className="field-label" htmlFor="register-password">Password</label>
           <div className="auth-password-field">
             <input
+              id="register-password"
               type={showPassword ? 'text' : 'password'}
               className="auth-input auth-input-with-action"
               placeholder="Create a strong password"
@@ -147,10 +210,10 @@ function RegisterPage() {
           {/* Live password requirements */}
           {userPassword.length > 0 && (
             <ul className="pwd-rules">
-              {rules.map((r, i) => {
+              {rules.map((r) => {
                 const met = r.test(userPassword);
                 return (
-                  <li key={i} className={met ? 'rule-met' : 'rule-unmet'}>
+                  <li key={r.label} className={met ? 'rule-met' : 'rule-unmet'}>
                     <span className="rule-dot" aria-hidden="true"></span>
                     {r.label}
                   </li>
@@ -159,9 +222,10 @@ function RegisterPage() {
             </ul>
           )}
 
-          <label className="field-label">Confirm Password</label>
+          <label className="field-label" htmlFor="register-confirm-password">Confirm Password</label>
           <div className="auth-password-field">
             <input
+              id="register-confirm-password"
               type={showConfirmPassword ? 'text' : 'password'}
               className="auth-input auth-input-with-action"
               placeholder="Repeat your password"
@@ -186,10 +250,61 @@ function RegisterPage() {
             className="auth-btn"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating account…' : 'Create Account'}
+            {isSubmitting ? 'Sending OTP…' : 'Create Account'}
           </button>
 
-        </form>
+          </form>
+        )}
+
+        {registrationStep === 'otp' && (
+          <form onSubmit={handleVerifyOtp} noValidate>
+            <label className="field-label" htmlFor="register-otp">One-Time Password (OTP)</label>
+            <input
+              id="register-otp"
+              type="text"
+              className="auth-input auth-otp-input"
+              placeholder="123456"
+              value={registrationOtp}
+              onChange={(e) => setRegistrationOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              inputMode="numeric"
+              pattern="\d{6}"
+              maxLength={6}
+              required
+              autoComplete="one-time-code"
+            />
+
+            <button
+              type="submit"
+              className="auth-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Verifying…' : 'Verify OTP & Create Account'}
+            </button>
+
+            <button
+              type="button"
+              className="auth-link-btn"
+              onClick={handleResendOtp}
+              disabled={isSubmitting}
+            >
+              Resend OTP
+            </button>
+
+            <button
+              type="button"
+              className="auth-link-btn"
+              onClick={() => {
+                setRegistrationStep('details');
+                setRegistrationOtp('');
+                setErrorMessage('');
+                setSuccessMessage('');
+              }}
+              disabled={isSubmitting}
+            >
+              Edit details
+            </button>
+          </form>
+        )}
 
         <p className="auth-switch">
           Already have an account?{' '}

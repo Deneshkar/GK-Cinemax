@@ -1,11 +1,144 @@
 const User = require('../models/User');
+const PendingRegistration = require('../models/PendingRegistration');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sendEmail } = require('../utils/email');
 
-const EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 const OTP_EXPIRY_MS = 10 * 60 * 1000;
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function generateOtp() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+async function sendRegistrationOtpEmail(user, otp) {
+  await sendEmail({
+    to: user.email,
+    subject: 'GK Cinemax — Verify your account',
+    html: `
+      <h2>Verify your account</h2>
+      <p>Hi ${user.name},</p>
+      <p>Use the code below to complete your GK Cinemax registration. This code expires in 10 minutes.</p>
+      <p style="font-size: 28px; font-weight: bold; letter-spacing: 6px;">${otp}</p>
+      <p>If you did not request this, you can ignore this email.</p>
+    `
+  });
+}
+
+function isValidOtp(otp) {
+  return /^\d{6}$/.test(String(otp || '').trim());
+}
+
+async function beginRegistration(req, res) {
+  const { name, email, password, phone } = req.body;
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!EMAIL_REGEX.test(normalizedEmail)) {
+    return res.status(400).json({ message: 'Please provide a valid and real email address format' });
+  }
+
+  if (!name || !phone) {
+    return res.status(400).json({ message: 'Please provide your name and phone number' });
+  }
+
+  if (!PASSWORD_REGEX.test(password)) {
+    return res.status(400).json({ message: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
+  }
+
+  const existingUser = await User.findOne({ email: normalizedEmail });
+  if (existingUser) {
+    return res.status(400).json({ message: 'Email already registered' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const registrationOtp = generateOtp();
+  const otpHash = await bcrypt.hash(registrationOtp, 10);
+  const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
+
+  await PendingRegistration.findOneAndUpdate(
+    { email: normalizedEmail },
+    {
+      name,
+      email: normalizedEmail,
+      phone,
+      password: hashedPassword,
+      otpHash,
+      expiresAt
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  try {
+    await sendRegistrationOtpEmail({ name, email: normalizedEmail }, registrationOtp);
+  } catch (error) {
+    if (process.env.NODE_ENV === 'production') {
+      await PendingRegistration.deleteOne({ email: normalizedEmail });
+      return res.status(500).json({
+        message: 'Failed to send verification OTP. Check EMAIL_USER and EMAIL_PASS in your server .env file.'
+      });
+    }
+
+    console.log(`[Registration] OTP for ${normalizedEmail}: ${registrationOtp}`);
+    console.log(error.message);
+  }
+
+  return res.status(200).json({
+    message: 'A 6-digit OTP has been sent to your email. Enter it to complete your account creation.'
+  });
+}
+
+async function completeRegistration(req, res) {
+  const { email, otp } = req.body;
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!EMAIL_REGEX.test(normalizedEmail)) {
+    return res.status(400).json({ message: 'Please provide a valid and real email address format' });
+  }
+
+  if (!isValidOtp(otp)) {
+    return res.status(400).json({ message: 'Please enter the 6-digit OTP sent to your email' });
+  }
+
+  const existingUser = await User.findOne({ email: normalizedEmail });
+  if (existingUser) {
+    return res.status(400).json({ message: 'Email already registered' });
+  }
+
+  const pendingRegistration = await PendingRegistration.findOne({ email: normalizedEmail });
+  if (!pendingRegistration?.otpHash || !pendingRegistration?.expiresAt) {
+    return res.status(400).json({ message: 'No pending registration found. Please request a new OTP.' });
+  }
+
+  if (pendingRegistration.expiresAt < new Date()) {
+    await PendingRegistration.deleteOne({ email: normalizedEmail });
+    return res.status(400).json({ message: 'OTP has expired. Please request a new OTP.' });
+  }
+
+  const otpMatch = await bcrypt.compare(String(otp).trim(), pendingRegistration.otpHash);
+  if (!otpMatch) {
+    return res.status(400).json({ message: 'Invalid OTP. Please check the code and try again.' });
+  }
+
+  const newUser = await User.create({
+    name: pendingRegistration.name,
+    email: pendingRegistration.email,
+    password: pendingRegistration.password,
+    phone: pendingRegistration.phone
+  });
+
+  await PendingRegistration.deleteOne({ email: normalizedEmail });
+
+  return res.status(201).json({
+    message: 'Account verified and created successfully',
+    token: createToken(newUser),
+    user: { id: newUser._id, name: newUser.name, email: newUser.email, isAdmin: newUser.isAdmin }
+  });
+}
 
 // Creates a JWT token for a user using their id, email and isAdmin status
 function createToken(user) {
@@ -16,44 +149,16 @@ function createToken(user) {
   );
 }
 
-// Registers a new user account
+// Sends or verifies a registration OTP before creating the account
 async function register(req, res) {
   try {
-    const { name, email, password, phone } = req.body;
+    const { otp } = req.body;
 
-    // Strict Email Validation (RFC 5322 Standard)
-    if (!EMAIL_REGEX.test(email)) {
-      return res.status(400).json({ message: 'Please provide a valid and real email address format' });
+    if (otp) {
+      return await completeRegistration(req, res);
     }
 
-    // Strict Password Validation
-    if (!PASSWORD_REGEX.test(password)) {
-      return res.status(400).json({ message: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
-    }
-
-    // Check if a user with this email already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
-    }
-
-    // Hash the password before saving it
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Save the new user to the database
-    const newUser = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      phone
-    });
-
-    // Return a token so the user is logged in immediately after registering
-    res.status(201).json({
-      message: 'Account created successfully',
-      token: createToken(newUser),
-      user: { id: newUser._id, name: newUser.name, email: newUser.email, isAdmin: newUser.isAdmin }
-    });
+    return await beginRegistration(req, res);
 
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -159,8 +264,11 @@ async function forgotPassword(req, res) {
       return res.status(404).json({ message: 'No account found with this email address' });
     }
 
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const otp = generateOtp();
     user.resetPasswordOtp = await bcrypt.hash(otp, 10);
+
+          console.log(`[Password Reset] OTP for ${user.email}: ${otp}`);
+          console.log(error.message);
     user.resetPasswordExpires = new Date(Date.now() + OTP_EXPIRY_MS);
     await user.save();
 
@@ -176,11 +284,8 @@ async function forgotPassword(req, res) {
           <p>If you did not request this, you can ignore this email.</p>
         `
       });
-    } catch (emailError) {
-      const isProduction = process.env.NODE_ENV === 'production';
-      if (!isProduction) {
-        console.log(`[Password Reset] OTP for ${user.email}: ${otp}`);
-      } else {
+    } catch (error) {
+      if (process.env.NODE_ENV === 'production') {
         user.resetPasswordOtp = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
@@ -188,6 +293,9 @@ async function forgotPassword(req, res) {
           message: 'Failed to send OTP email. Check EMAIL_USER and EMAIL_PASS in your server .env file.'
         });
       }
+
+      console.log(`[Password Reset] OTP for ${user.email}: ${otp}`);
+      console.log(error.message);
     }
 
     res.json({ message: 'A 6-digit OTP has been sent to your email. It expires in 10 minutes.' });
@@ -205,7 +313,7 @@ async function resetPassword(req, res) {
       return res.status(400).json({ message: 'Please provide a valid email address' });
     }
 
-    if (!otp || !/^\d{6}$/.test(String(otp).trim())) {
+    if (!otp || /^\d{6}$/.test(String(otp).trim()) === false) {
       return res.status(400).json({ message: 'Please enter the 6-digit OTP from your email' });
     }
 
@@ -216,7 +324,7 @@ async function resetPassword(req, res) {
     }
 
     const user = await User.findOne({ email: email.trim() });
-    if (!user || !user.resetPasswordOtp || !user.resetPasswordExpires) {
+    if (!user?.resetPasswordOtp || !user?.resetPasswordExpires) {
       return res.status(400).json({ message: 'Invalid or expired OTP. Please request a new one.' });
     }
 
